@@ -13,6 +13,7 @@ include "graphics.asm"
 include "mouse.asm"
 include "buttons.asm"
 include "mario.asm"
+include "keyboard.asm"
 ; include "sound.asm"
 
 DATASEG
@@ -34,6 +35,7 @@ start:
 		; call PlayMusic
 		call UpdateMouse
 		call CheckClickOnButton
+		call DetectKey
 		call UpdateMario
 
 		cmp [IsRightButtonPressed], 1
