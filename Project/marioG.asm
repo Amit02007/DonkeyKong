@@ -12,39 +12,39 @@ DATASEG
 	; 4 -> Walking Left
 	MarioFileName db "mario1.bmp", 0
 
-	LastMarioPos 	db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
+	LastMarioPos 	db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
 
-	MarioMatrix 	db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
-					db 15 dup (0)
+	MarioMatrix 	db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
+					db 16 dup (0)
  
 	MarioFileHandle	dw ?
 	MarioHeader db 54 dup(0)
@@ -53,6 +53,7 @@ DATASEG
 
 	; Mario image data
 	CurrentImage dw "1"
+	LastImage dw "1"
 	MarioWidth db 12
 	MarioHeight db 16
 	MarioArea dw 192
@@ -65,14 +66,9 @@ proc ChangeMarioImage
 	mov bp, sp
 	push ax
 	push dx
-
-	call CloseMarioBmpFile
 	
 	mov ax, Image
 	mov [MarioFileName + 5], al
-
-	; push Image
-	; call ChangeMarioData
 
 	mov dx, offset MarioFileName
 	mov ax, [MarioTopPointX]
@@ -94,154 +90,319 @@ proc ChangeMarioImage
 	ret 2
 endp ChangeMarioImage
 
-; Image equ [bp + 4]
-; proc ChangeMarioData
-; 	push bp
-; 	mov bp, sp
-; 	push ax
+Image equ [bp + 4]
+proc ChangeMarioData
+	push bp
+	mov bp, sp
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
 
-; 	mov ax, Image
+	mov ax, Image
 
-; 	cmp ax, "1"
-; 	je @@One
+	cmp ax, "1"
+	je @@One
 
-; 	cmp ax, "2"
-; 	je @@Two
+	cmp ax, "2"
+	je @@Two
 
-; 	cmp ax, "3"
-; 	je @@Three
+	cmp ax, "3"
+	je @@Three
 
-; 	cmp ax, "4"
-; 	je @@Four
-
-; 	jmp @@Quit
-
-; 	@@One:
-; 		mov [MarioWidth], 12
-; 		mov	[MarioHeight], 16
-; 		mov	[MarioArea], 192
-
-; 		jmp @@Quit
+	cmp ax, "4"
+	je @@Four
 	
-; 	@@Two:
-; 		mov [MarioWidth], 12
-; 		mov	[MarioHeight], 16
-; 		mov	[MarioArea], 192
-
-; 		jmp @@Quit
-
-; 	@@Three:
-; 		mov [MarioWidth], 15
-; 		mov	[MarioHeight], 16
-; 		mov	[MarioArea], 240
-
-; 		jmp @@Quit
-
-; 	@@Four:
-; 		mov [MarioWidth], 15
-; 		mov	[MarioHeight], 16
-; 		mov	[MarioArea], 240
-
-; 		jmp @@Quit
-
-
-; 	@@Quit:
-; 		pop ax
-; 		pop bp
-; 		ret 2
-; endp ChangeMarioData
-
-
-; proc UpdateMarioImage
-; 	push ax
-; 	push bx
-; 	push es
-
-; 	cmp [ButtonPressed], 0
-; 	je @@Standing
+	cmp ax, "5"
+	je @@Five
 	
-; 	cmp [ButtonPressed], "L"
-; 	je @@Walking
+	cmp ax, "6"
+	je @@Six
+
+	jmp @@Quit
+
+	@@One:
+		mov [MarioWidth], 12
+		mov	[MarioHeight], 16
+		mov	[MarioArea], 192
+
+		jmp @@Quit
 	
-; 	cmp [ButtonPressed], "R"
-; 	je @@Walking
+	@@Two:
+		mov [MarioWidth], 12
+		mov	[MarioHeight], 16
+		mov	[MarioArea], 192
+
+		jmp @@Quit
+
+	@@Three:
+		mov [MarioWidth], 15
+		mov	[MarioHeight], 16
+		mov	[MarioArea], 240
+
+		jmp @@Quit
+
+	@@Four:
+		mov [MarioWidth], 15
+		mov	[MarioHeight], 16
+		mov	[MarioArea], 240
+
+		jmp @@Quit
+	
+	@@Five:
+		mov [MarioWidth], 16
+		mov	[MarioHeight], 16
+		mov	[MarioArea], 256
+
+		jmp @@Quit
+	
+	@@Six:
+		mov [MarioWidth], 16
+		mov	[MarioHeight], 16
+		mov	[MarioArea], 256
+
+		jmp @@Quit
 
 
-; 	jmp @@Quit
+	@@Quit:
+		pop dx
+		pop si
+		pop cx
+		pop bx
+		pop ax
+		pop bp
+		ret 2
+endp ChangeMarioData
 
-; 	@@Standing:
-; 		cmp [LastButtonPressed], "L"
-; 		je @@StandingLeft
+
+proc UpdateMarioImage
+	push ax
+	push bx
+	push cx
+	push dx
+	push es
+
+	mov ax, [CurrentImage]
+	mov [lastImage], ax
+	mov ax, [CurrentImage]
+
+	
+	cmp [IsJumping], 1
+	je @@Jumping
+
+	cmp [ButtonPressed], "L"
+	je @@Walking
+	
+	cmp [ButtonPressed], "R"
+	je @@Walking
+	
+	cmp [ButtonPressed], 0
+	je @@Standing
+
+
+	@@Standing:
+		cmp [LastButtonPressed], "L"
+		je @@StandingLeft
 		
-; 		cmp [LastButtonPressed], "R"
-; 		je @@StandingRight
+		cmp [LastButtonPressed], "R"
+		je @@StandingRight
 
-; 		@@StandingLeft:
-; 			mov [CurrentImage], "2"
-; 			jmp @@Quit
-
-; 		@@StandingRight:
-; 			mov [CurrentImage], "1"
-; 			jmp @@Quit
-
-
-; 	@@Walking:
-; 		mov al, [LastButtonPressed]
-; 		cmp [ButtonPressed], al
-; 		je @@WalkingAnimation
-
-; 		cmp [ButtonPressed], "L"
-; 		je @@StandingLeft
-		
-; 		cmp [ButtonPressed], "R"
-; 		je @@StandingRight
-
-
-; 		@@WalkingAnimation:
-; 			mov ax, 40h
-; 			mov es, ax
-
-; 			mov ax, [Clock]
-
-; 			cmp ax, [LastAnimation]
-; 			je @@Quit
-; 			mov [LastAnimation], ax
-
-; 			cmp [ButtonPressed], "L"
-; 			je @@WalkingAnimationLeft
+		@@ReturnFromJump:
+			cmp [CurrentImage], "6"
+			je @@StandingLeft
 			
-; 			cmp [ButtonPressed], "R"
-; 			je @@WalkingAnimationRight
+			cmp [CurrentImage], "5"
+			je @@StandingRight
 
-; 			@@WalkingAnimationLeft:
-; 				cmp [CurrentImage], "1"
-; 				je @@SwitchLeft
+			jmp @@Quit
 
-; 				mov [CurrentImage], "1"
-; 				jmp @@Quit
+		@@StandingLeft:
+			mov [CurrentImage], "2"
+			jmp @@Quit
 
-; 				@@SwitchLeft:
-; 					mov [CurrentImage], "3"
-; 					jmp @@Quit
+		@@StandingRight:
+			mov [CurrentImage], "1"
+			jmp @@Quit
 
 
-; 			@@WalkingAnimationRight:
-; 				cmp [CurrentImage], "2"
-; 				je @@SwitchRight
+	@@Jumping:
+		mov ax, [CurrentImage]
 
-; 				mov [CurrentImage], "2"
-; 				jmp @@Quit
+		cmp ax, "2"
+		je @@JumpingLeft
+		
+		cmp ax, "1"
+		je @@JumpingRight
+		
+		cmp ax, "6"
+		je @@JumpingLeft
+		
+		cmp ax, "5"
+		je @@JumpingRight
 
-; 				@@SwitchRight:
-; 					mov [CurrentImage], "4"
-; 					jmp @@Quit
+		@@JumpingLeft:
+			mov [CurrentImage], "6"
+			jmp @@Quit
 
-; 	@@Quit:
-; 		pop es
-; 		pop bx
-; 		pop ax
-; 		ret
-; endp UpdateMarioImage
+		@@JumpingRight:
+			mov [CurrentImage], "5"
+			jmp @@Quit
+
+
+	@@Walking:
+		mov al, [LastButtonPressed]
+		cmp [ButtonPressed], al
+		je @@WalkingAnimation
+
+		cmp [ButtonPressed], "L"
+		je @@StandingLeft
+		
+		cmp [ButtonPressed], "R"
+		je @@StandingRight
+
+
+		@@WalkingAnimation:
+			mov ax, 40h
+			mov es, ax
+
+			mov ax, [Clock]
+
+			cmp ax, [LastAnimation]
+			je @@Quit
+			mov [LastAnimation], ax
+	
+			cmp [ButtonPressed], "L"
+			je @@WalkingAnimationLeft
+			
+			cmp [ButtonPressed], "R"
+			je @@WalkingAnimationRight
+
+			@@WalkingAnimationLeft:
+
+				cmp [CurrentImage], "2"
+				je @@SwitchLeft
+
+				mov [CurrentImage], "2"
+				jmp @@Quit
+
+				@@SwitchLeft:
+					mov [CurrentImage], "2" ; 4
+					jmp @@Quit
+
+
+			@@WalkingAnimationRight:
+				cmp [CurrentImage], "1"
+				je @@SwitchRight
+
+				mov [CurrentImage], "1"
+				jmp @@Quit
+
+				@@SwitchRight:
+					mov [CurrentImage], "1" ; 3
+					jmp @@Quit
+
+
+	@@Quit:
+		mov ax, [LastImage]
+		cmp [CurrentImage], ax
+		je @@Resume
+
+		call RefreshMario
+
+		cmp [LastImage], "5"
+		je @@ShowMario
+
+		cmp [LastImage], "6"
+		je @@ShowMario
+		
+		jmp @@Resume
+
+		@@ShowMario:
+			push [CurrentImage]
+			call ChangeMarioImage
+
+		@@Resume:
+			pop es
+			pop dx
+			pop cx
+			pop bx
+			pop ax
+			ret
+endp UpdateMarioImage
+
+
+proc RefreshMario
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
+
+	call CloseMarioBmpFile
+
+	push [MarioTopPointX]
+	push [MarioTopPointY]
+	call ConvertMatrixPos
+	lea cx, [LastMarioPos] 
+	mov [Matrix], cx ; put the bytes offset in Matrix
+	xor dx, dx
+	mov dl, [MarioWidth]   ; number of cols 
+	xor cx, cx 
+	mov cl, [MarioHeight]  ;number of rows
+	call putMatrixInScreen
+
+	push [CurrentImage]
+	call ChangeMarioData
+
+	xor cx, cx
+	mov cl, [MarioWidth]
+
+	xor si, si
+	@@Column:
+		xor bx, bx
+			@@Row:
+				mov ax, [MarioTopPointX]
+				add ax, bx
+				push ax
+				mov ax, [MarioTopPointY]
+				add ax, si
+				push ax
+				call GetPixelColor
+
+				push si
+				push ax
+				mov dx, si
+				mov al, [MarioWidth]
+				mul dl
+				add ax, bx
+				mov si, ax
+				pop ax
+
+				mov [LastMarioPos + si], al
+				pop si
+				inc bx
+				cmp bx, cx
+				jne @@Row
+		
+		xor bx, bx
+		mov bl, [MarioHeight]
+		inc si
+		cmp si, bx
+	jne @@Column
+
+	call CheckJump
+
+	; push [CurrentImage]
+	; call ChangeMarioImage
+
+	pop si
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	ret
+endp RefreshMario
 
 
 proc RemoveMarioBackground
@@ -395,7 +556,7 @@ proc MoveMarioPixelLeft
 		jne @@GetLeftPixels
 	
 	dec [MarioTopPointX]
-	push "2"
+	push [CurrentImage]
 	call ChangeMarioImage
 
 	@@Quit:
@@ -491,7 +652,7 @@ proc MoveMarioPixelRight
 		jne @@GetRightPixels
 	
 	inc [MarioTopPointX]
-	push "1"
+	push [CurrentImage]
 	call ChangeMarioImage
 
 	@@Quit:

@@ -15,6 +15,8 @@ DATASEG
 
 	LastFall dw 0
 	LastJump dw 0
+	IsJumping db 0
+	JumpingDirection db 0
 
 	IsInit db 0
 
@@ -112,16 +114,26 @@ proc UpdateMario
 	mov [IsInit], 1
 
 	@@Init:
-		; call UpdateMarioImage
+		call UpdateMarioImage
 
 		cmp [MarioJumpState], 1
 		je @@Jump
 
-		call MarioFalling
-		jmp @@Resume
+		call CheckJump
+		cmp ax, 0
+		je @@ResumeFalling
+
+		mov [IsJumping], 0
+		mov [JumpingDirection], 0
+
+		@@ResumeFalling:
+			call MarioFalling
+			jmp @@Resume
 
 		@@Jump:
+			mov [IsJumping], 1
 			call MarioJump
+
 
 		@@Resume:
 		cmp [ButtonPressed], "L"
@@ -152,6 +164,21 @@ proc UpdateMario
 			
 			mov [MarioJumpState], 1
 
+			cmp [LastButtonPressed], "L"
+			je @@JumpingDirectionLeft
+
+			cmp [LastButtonPressed], "R"
+			je @@JumpingDirectionRight
+
+			jmp @@DontJump
+
+			@@JumpingDirectionLeft:
+				mov [JumpingDirection], "L"
+				jmp @@DontJump
+
+			@@JumpingDirectionRight:
+				mov [JumpingDirection], "R"
+
 			@@DontJump:
 				pop ax
 
@@ -169,11 +196,11 @@ endp UpdateMario
 
 
 proc MoveMarioLeft
-	cmp [MarioFileName + 5], "2"
-	je @@CorrectImage
+	; cmp [MarioFileName + 5], "2"
+	; je @@CorrectImage
 			
-	push "2"
-	call ChangeMarioImage
+	; push "2"
+	; call ChangeMarioImage
 
 	@@CorrectImage:
 		call CheckStairs
@@ -184,11 +211,11 @@ endp MoveMarioLeft
 
 
 proc MoveMarioRight
-	cmp [MarioFileName + 5], "1"
-	je @@CorrectImage
+	; cmp [MarioFileName + 5], "1"
+	; je @@CorrectImage
 
-	push "1"
-	call ChangeMarioImage
+	; push "1"
+	; call ChangeMarioImage
 
 	@@CorrectImage:
 		call CheckStairs

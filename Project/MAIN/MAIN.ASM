@@ -38,6 +38,7 @@ start:
 		call DetectKey
 		call UpdateMario
 
+
 		cmp [IsRightButtonPressed], 1
 		je exit
 

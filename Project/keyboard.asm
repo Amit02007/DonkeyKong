@@ -12,8 +12,11 @@ DATASEG
 	; Right Arrow -> R
 	; Space -> S
 	; Escape -> E
-	ButtonPressed db ?
+	ButtonPressed db 0
+	ButtonPressed2 db 0
+	LastButtonPressed db 0
 	
+
 	ButtonPressedScan dw ?
 
 	ArrowKeyScan  db 48h,50h,4dh,4bh
@@ -26,11 +29,14 @@ proc DetectKey
 	push bx
 	push cx
 
+	mov al, [ButtonPressed2]
+	mov [LastButtonPressed], al
 
 	; Check if a key pressed
 	mov ah, 01h
 	int 16h
 	jz @@NotPressed
+
 
 	@@CheckForKey:
 		mov ah, 00h
@@ -77,6 +83,8 @@ proc DetectKey
 
 		mov al, [ArrowKey + bx]
 		mov [ButtonPressed], al
+		mov [ButtonPressed2], al
+
 		jmp @@Quit
 
 	@@NotPressed:
