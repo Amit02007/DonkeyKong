@@ -44,6 +44,7 @@ DATASEG
 	BmpRowSize dw ?
 
 	FloorColor db ?
+	LadderColor db ?
 
 CODESEG
 
@@ -196,6 +197,11 @@ proc UpdateBackgourndImage
 		push 190
 		call GetPixelColor
 		mov [FloorColor], al
+
+		push 226
+		push 184
+		call GetPixelColor
+		mov [LadderColor], al
 
 		pop dx
 		pop ax

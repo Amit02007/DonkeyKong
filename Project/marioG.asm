@@ -10,6 +10,10 @@ DATASEG
 	; 2 -> Standing Left
 	; 3 -> Walking Right
 	; 4 -> Walking Left
+	; 5 -> Jumping Rihgt
+	; 6 -> Jumping Left
+	; 7 -> Climbing Right
+	; 8 -> Climbing Left
 	MarioFileName db "mario1.bmp", 0
 
 	LastMarioPos 	db 16 dup (0)
@@ -103,71 +107,63 @@ proc ChangeMarioData
 	mov ax, Image
 
 	cmp ax, "1"
-	je @@One
+	je @@Standing
 
 	cmp ax, "2"
-	je @@Two
+	je @@Standing
 
 	cmp ax, "3"
-	je @@Three
+	je @@Walking
 
 	cmp ax, "4"
-	je @@Four
+	je @@Walking
 	
 	cmp ax, "5"
-	je @@Five
+	je @@Jumping
 	
 	cmp ax, "6"
-	je @@Six
+	je @@Jumping
+	
+	cmp ax, "7"
+	je @@Climbing
+	
+	cmp ax, "8"
+	je @@Climbing
 
 	jmp @@Quit
 
-	@@One:
-		mov [MarioWidth], 12
-		mov	[MarioHeight], 16
-		mov	[MarioArea], 192
-
-		jmp @@Quit
-	
-	@@Two:
+	@@Standing:
 		mov [MarioWidth], 12
 		mov	[MarioHeight], 16
 		mov	[MarioArea], 192
 
 		jmp @@Quit
 
-	@@Three:
-		mov [MarioWidth], 15
-		mov	[MarioHeight], 16
-		mov	[MarioArea], 240
-
-		jmp @@Quit
-
-	@@Four:
+	@@Walking:
 		mov [MarioWidth], 15
 		mov	[MarioHeight], 16
 		mov	[MarioArea], 240
 
 		jmp @@Quit
 	
-	@@Five:
+	@@Jumping:
 		mov [MarioWidth], 16
 		mov	[MarioHeight], 16
 		mov	[MarioArea], 256
 
 		jmp @@Quit
 	
-	@@Six:
-		mov [MarioWidth], 16
+	@@Climbing:
+		mov [MarioWidth], 13
 		mov	[MarioHeight], 16
-		mov	[MarioArea], 256
+		mov	[MarioArea], 208
 
 		jmp @@Quit
 
 
 	@@Quit:
-		pop dx
 		pop si
+		pop dx
 		pop cx
 		pop bx
 		pop ax
@@ -190,16 +186,31 @@ proc UpdateMarioImage
 	
 	cmp [IsJumping], 1
 	je @@Jumping
+	
+	cmp [IsJumping], 2
+	je @@ReturnFromJump
+	
+	cmp [MarioClimbState], 1
+	jne @@NotUp
+	jmp @@Climbing
 
+	@@NotUp:
 	cmp [ButtonPressed], "L"
 	je @@Walking
 	
 	cmp [ButtonPressed], "R"
 	je @@Walking
 	
+	
+	; cmp [ButtonPressed], "D"
+	; jne @@NotDown
+	; jmp @@Climbing
+
+	; @@NotDown:
 	cmp [ButtonPressed], 0
 	je @@Standing
 
+	jmp @@Quit
 
 	@@Standing:
 		cmp [LastButtonPressed], "L"
@@ -207,6 +218,8 @@ proc UpdateMarioImage
 		
 		cmp [LastButtonPressed], "R"
 		je @@StandingRight
+		
+		jmp @@Quit
 
 		@@ReturnFromJump:
 			cmp [CurrentImage], "6"
@@ -302,6 +315,10 @@ proc UpdateMarioImage
 					mov [CurrentImage], "1" ; 3
 					jmp @@Quit
 
+	@@Climbing:
+		mov [CurrentImage], "7"
+		jmp @@Quit
+
 
 	@@Quit:
 		mov ax, [LastImage]
@@ -315,6 +332,12 @@ proc UpdateMarioImage
 
 		cmp [LastImage], "6"
 		je @@ShowMario
+		
+		; cmp [LastImage], "7"
+		; je @@ShowMario
+		
+		; cmp [LastImage], "8"
+		; je @@ShowMario
 		
 		jmp @@Resume
 
@@ -391,7 +414,7 @@ proc RefreshMario
 		cmp si, bx
 	jne @@Column
 
-	call CheckJump
+	call CheckOnFloor
 
 	; push [CurrentImage]
 	; call ChangeMarioImage
@@ -809,9 +832,6 @@ proc MoveMarioPixelUp
 	mov cx, [MarioTopPointY]
 	dec cx
 	xor si, si
-	; mov cx, [MarioTopPointY]
-	; dec cx
-	; xor si, si
 	@@GetUpPixels:
 
 		mov ax, [MarioTopPointX]
@@ -824,16 +844,6 @@ proc MoveMarioPixelUp
 		inc si
 		cmp si, dx
 		jne @@GetUpPixels
-	
-	; mov dx, offset MarioFileName
-	; mov ax, [MarioTopPointX]
-	; mov [BmpLeft], ax
-	; mov ax, [MarioTopPointY]
-	; dec ax
-	; mov [BmpTop], ax
-	; mov [BmpColSize], 12
-	; mov [BmpRowSize], 16
-	; call OpenShowMarioBmp
 
 	dec [MarioTopPointY]
 	push [CurrentImage]

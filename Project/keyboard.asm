@@ -89,6 +89,7 @@ proc DetectKey
 
 	@@NotPressed:
 		mov [ButtonPressed], 0
+		mov [ButtonPressed2], 0
 		mov [ButtonPressedScan], 0
 
 	@@Quit:

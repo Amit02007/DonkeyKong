@@ -17,11 +17,15 @@ DATASEG
 	LastJump dw 0
 	IsJumping db 0
 	JumpingDirection db 0
+	MarioJumpState db 0
+	MarioJumpCounter db 0
+
+	IsReadyToClimb db 0
+	MarioClimbState db 0
+	LastClimb dw 0
 
 	IsInit db 0
 
-	MarioJumpState db 0
-	MarioJumpCounter db 0
 
 CODESEG
 
@@ -115,16 +119,42 @@ proc UpdateMario
 
 	@@Init:
 		call UpdateMarioImage
+		
+		cmp [MarioClimbState], 1
+		jne @@NotClimb
+
+		call MarioClimb
+
+		jmp @@Quit
+
+		@@NotClimb:
 
 		cmp [MarioJumpState], 1
 		je @@Jump
 
-		call CheckJump
+		call CheckOnFloor
 		cmp ax, 0
 		je @@ResumeFalling
 
-		mov [IsJumping], 0
-		mov [JumpingDirection], 0
+		; On floor
+
+		cmp [IsJumping], 1 ; Means that returned from jump to floor
+		je @@ReturnFromJump
+
+		cmp [IsJumping], 2 
+		je @@AlreadyReturned
+
+		jmp @@JumpingDirectionZero
+
+		@@ReturnFromJump:
+			mov [IsJumping], 2
+			jmp @@JumpingDirectionZero
+
+		@@AlreadyReturned:
+			mov [IsJumping], 0
+
+		@@JumpingDirectionZero:
+			mov [JumpingDirection], 0
 
 		@@ResumeFalling:
 			call MarioFalling
@@ -134,17 +164,21 @@ proc UpdateMario
 			mov [IsJumping], 1
 			call MarioJump
 
-
 		@@Resume:
+
+		call CheckIsReadyToClimb
+
 		cmp [ButtonPressed], "L"
 		je @@Left
 		cmp [ButtonPressed], "R"
 		je @@Right
 		cmp [ButtonPressed], "S"
-		jne @@NotJump
-		jmp @@Up
+		je @@Up
+		cmp [ButtonPressed], "U"
+		je @@ClimbButton
+		cmp [ButtonPressed], "D"
+		je @@ClimbButton
 
-		@@NotJump:
 		jmp @@Quit
 
 		@@Left:
@@ -158,7 +192,7 @@ proc UpdateMario
 		@@Up:
 			push ax
 
-			call CheckJump
+			call CheckOnFloor
 			cmp ax, 1
 			jne @@DontJump
 			
@@ -182,6 +216,14 @@ proc UpdateMario
 			@@DontJump:
 				pop ax
 
+		@@ClimbButton:
+
+			call CheckIsReadyToClimb
+
+			cmp [IsReadyToClimb], 0
+			je @@Quit
+
+			mov [MarioClimbState], 1
 
 
 	jmp @@Quit
@@ -225,7 +267,188 @@ proc MoveMarioRight
 endp MoveMarioRight
 
 
-proc CheckJump
+proc MarioClimb
+	push ax
+
+	; xor ax, ax
+	; mov al, [ButtonPressed]
+	; call showaxdecimal
+
+	cmp [LastButtonPressed], "U"
+	je @@Up
+	cmp [LastButtonPressed], "D"
+	je @@Down
+
+	jmp @@OnLadder
+
+	@@Up:
+		call MoveMarioPixelUp
+		jmp @@Quit
+
+	@@Down:
+		call CheckOnFloor
+		cmp al, 1
+		jne @MoveDown
+
+		mov [MarioClimbState], 0
+		jmp @@Quit
+
+		@MoveDown:
+			call MoveMarioPixelDown
+			jmp @@Quit
+
+	@@Quit:
+		call CheckEndClimb
+		; call CheckOnFloor
+		; cmp al, 1
+		; je @@StopClimb
+
+		; call CheckIsReadyToClimb
+		; cmp [IsReadyToClimb], 0
+		; jne @@OnLadder
+
+		; @@StopClimb:
+		; mov [MarioClimbState], 0
+
+		@@OnLadder:
+		pop ax
+		ret
+endp MarioClimb
+
+
+proc CheckEndClimb
+	push ax
+	push bx
+	push cx
+	push si
+
+
+	; mov bx, [MarioTopPointX]
+
+	xor ax, ax
+	mov al, [LadderColor]
+
+	
+	xor cx, cx
+	mov cl, [MarioWidth]
+
+	xor bx, [MarioArea]
+	sub bx, cx
+	@@CheckForLadder:
+		cmp al, [LastMarioPos + bx]
+		je @@LadderFound
+
+		inc bx
+	loop @@CheckForLadder
+
+
+	; call CheckOnFloor
+	; cmp al, 1
+	; jne @@CheckAbove
+	
+	mov [MarioClimbState], 0
+	jmp @@Quit
+
+	; @@CheckAbove:
+	@@LadderFound:
+	@@Quit:
+		pop si
+		pop cx
+		pop bx
+		pop ax
+		ret
+endp CheckEndClimb
+
+
+proc CheckIsReadyToClimb
+	push ax
+	push bx
+	push dx
+	push si
+	
+	xor si, si
+	xor bx, bx
+	@@Column:
+		xor bx, bx
+		@@Row:
+
+		mov al, [LastMarioPos + bx + si]
+
+		cmp al, [LadderColor]
+		jne @@NoBackGound
+		jmp @@FoundColor
+
+		@@NoBackGound:
+			inc bx
+			cmp bl, [MarioWidth]
+			jne @@Row
+
+	xor bx, bx
+	mov bl, [MarioWidth]
+	add si, bx
+	mov bx, [MarioArea]
+	cmp si, bx
+	jne @@Column
+
+	mov [IsReadyToClimb], 0
+	jmp @@Quit
+
+
+	@@FoundColor:
+		call CheckOnFloor
+		cmp al, 1
+		jne @@Quit
+		mov [IsReadyToClimb], 1
+	
+
+	@@Quit:
+		pop si
+		pop dx
+		pop bx
+		pop ax
+		ret
+endp CheckIsReadyToClimb
+
+
+proc IsStandingOnLadder
+	push bx
+	push cx
+	push dx
+
+	xor cx, cx
+	mov cl, [MarioHeight]
+	mov bx, [MarioTopPointY]
+	add bx, cx
+	
+	mov dx, [MarioTopPointX]
+	mov cl, [MarioWidth]
+	@@FindLadder:
+		push dx
+		push bx
+		call GetPixelColor
+
+		cmp al, [LadderColor]
+		je @@FoundLadder
+
+		inc dx
+	loop @@FindLadder
+
+
+	mov ax, 0
+	jmp @@Quit
+
+	@@FoundLadder:
+		mov ax, 1
+
+	@@Quit:
+		pop dx
+		pop cx
+		pop bx
+		ret
+endp IsStandingOnLadder
+
+
+proc CheckOnFloor
 	push cx
 
 	xor ax, ax
@@ -274,7 +497,7 @@ proc CheckJump
 	@@Quit:
 		pop cx
 		ret
-endp CheckJump
+endp CheckOnFloor
 
 
 proc MarioJump near
@@ -359,6 +582,14 @@ proc MarioFalling near
 
 		cmp al, [FloorColor]
 		je @@OnFloor
+
+		call IsStandingOnLadder
+		cmp al, 1
+		je @@OnFloor
+
+		
+		; cmp al, [LadderColor]
+		; je @@OnFloor
 
 		call MoveMarioPixelDown
 

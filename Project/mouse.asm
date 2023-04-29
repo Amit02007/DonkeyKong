@@ -85,6 +85,13 @@ DATASEG
 
 CODESEG
 
+
+;================================================
+; Description - A procedure that changes the mouse cursor to a custom cursor with a specified hotspot and offset. 
+; 				It then calls interrupt 33h with function 9h to change the cursor shape and position. 
+; INPUT: Stack: HotSpotX, HotSpotY, CursorOffset
+; OUTPUT: Screen: Cursor
+;================================================
 HotSpotX equ [word ptr bp + 8]
 HotSpotY equ [word ptr bp + 6]
 CursorOffset equ [word ptr bp + 4]
@@ -117,7 +124,15 @@ proc ChangeCursor
 	
 endp ChangeCursor
 
-
+;================================================
+; Description - A procedure that updating the state of the mouse
+; 				and storing the current position and button states in memory variables 
+; 				`MousePosX`, `MousePosY`, `IsLeftButtonPressed`, and `IsRightButtonPressed`. 				
+; 				It does this by calling interrupt 33h with function 3h to get the current mouse position and button states, 
+; 				and then manipulating the resulting values to store them in the appropriate memory variables.
+; INPUT: None
+; OUTPUT: Memory: MousePosX, MousePosY, IsLeftButtonPressed, IsRightButtonPressed
+;================================================
 proc UpdateMouse
 	push ax
 	push bx
@@ -152,60 +167,60 @@ endp UpdateMouse
 
 
 proc ShowAxDecimal
-       push ax
-	   push bx
-	   push cx
-	   push dx
-	   
-	   ; check if negative
-	   test ax,08000h
-	   jz PositiveAx
-			
-	   ;  put '-' on the screen
-	   push ax
-	   mov dl,'-'
-	   mov ah,2
-	   int 21h
-	   pop ax
-
-	   neg ax ; make it positive
-PositiveAx:
-       mov cx,0   ; will count how many time we did push 
-       mov bx,10  ; the divider
-   
-put_mode_to_stack:
-       xor dx,dx
-       div bx
-       add dl,30h
-	   ; dl is the current LSB digit 
-	   ; we cant push only dl so we push all dx
-       push dx    
-       inc cx
-       cmp ax,9   ; check if it is the last time to div
-       jg put_mode_to_stack
-
-	   cmp ax,0
-	   jz pop_next  ; jump if ax was totally 0
-       add al,30h  
-	   mov dl, al    
-  	   mov ah, 2h
-	   int 21h        ; show first digit MSB
-	       
-pop_next: 
-       pop ax    ; remove all rest LIFO (reverse) (MSB to LSB)
-	   mov dl, al
-       mov ah, 2h
-	   int 21h        ; show all rest digits
-       loop pop_next
+		push ax
+		push bx
+		push cx
+		push dx
 		
-	   mov dl, ','
-       mov ah, 2h
-	   int 21h
-   
-	   pop dx
-	   pop cx
-	   pop bx
-	   pop ax
-	   
-	   ret
+		; check if negative
+		test ax,08000h
+		jz PositiveAx
+				
+		;  put '-' on the screen
+		push ax
+		mov dl,'-'
+		mov ah,2
+		int 21h
+		pop ax
+
+		neg ax ; make it positive
+	PositiveAx:
+		mov cx,0   ; will count how many time we did push 
+		mov bx,10  ; the divider
+	
+	put_mode_to_stack:
+		xor dx,dx
+		div bx
+		add dl,30h
+		; dl is the current LSB digit 
+		; we cant push only dl so we push all dx
+		push dx    
+		inc cx
+		cmp ax,9   ; check if it is the last time to div
+		jg put_mode_to_stack
+
+		cmp ax,0
+		jz pop_next  ; jump if ax was totally 0
+		add al,30h  
+		mov dl, al    
+		mov ah, 2h
+		int 21h        ; show first digit MSB
+			
+	pop_next: 
+		pop ax    ; remove all rest LIFO (reverse) (MSB to LSB)
+		mov dl, al
+		mov ah, 2h
+		int 21h        ; show all rest digits
+		loop pop_next
+			
+		mov dl, ','
+		mov ah, 2h
+		int 21h
+	
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		
+		ret
 endp ShowAxDecimal

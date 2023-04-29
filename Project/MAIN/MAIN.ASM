@@ -61,44 +61,4 @@ exit:
 	mov ax, 4c00h
 	int 21h
 
-
-; proc CheckPause
-; 	push ax
-
-; 	cmp [CurrentScreen], 1
-; 	jne @@NotPressed
-
-; 	; Check if a key pressed
-; 	mov ah, 01h
-; 	int 16h
-; 	jz @@NotPressed
-
-; 	@@CheckForKey:
-; 		mov ah, 00h
-; 		int 16h
-
-; 		; Check if a key pressed
-; 		push ax
-; 		mov ah, 01h
-; 		int 16h
-; 		jz @@NoMoreKeys
-; 		pop ax
-; 		jmp @@CheckForKey
-
-; 	@@NoMoreKeys:
-; 		pop ax
-	
-; 	cmp ax, 11bh
-; 	jne @@NotPressed
-	
-; 	mov [SelectedScreen], 3
-; 	call SwitchScreen
-; 	call UpdateBackgourndImage
-
-; 	@@NotPressed:
-; 		pop ax
-; 		ret
-; endp CheckPause
-
-
 END start
