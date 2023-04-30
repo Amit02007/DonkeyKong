@@ -15,6 +15,7 @@ DATASEG
 	ButtonPressed db 0
 	ButtonPressed2 db 0
 	LastButtonPressed db 0
+	LastButtonPressed2 db 0
 	
 
 	ButtonPressedScan dw ?
@@ -31,6 +32,8 @@ proc DetectKey
 
 	mov al, [ButtonPressed2]
 	mov [LastButtonPressed], al
+	mov al, [ButtonPressed2]
+	mov [LastButtonPressed2], al
 
 	; Check if a key pressed
 	mov ah, 01h

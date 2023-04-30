@@ -82,10 +82,13 @@ proc InitMario
 	push "1"
 	call ChangeMarioImage
 
-	pop ax
-	pop bx
-	pop bx
+	push 1
+	call StartTimer
+
 	pop si
+	pop dx
+	pop bx
+	pop ax
 	ret
 endp InitMario
 

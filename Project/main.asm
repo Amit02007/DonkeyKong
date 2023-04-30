@@ -14,10 +14,12 @@ include "mouse.asm"
 include "buttons.asm"
 include "mario.asm"
 include "keyboard.asm"
+include "timer.asm"
 ; include "sound.asm"
 
 DATASEG
-
+	isfirst db 0
+	isfirst2 db 0
 CODESEG
  
 
@@ -29,10 +31,9 @@ start:
 	call InitButtons
 	; call InitSound
 
-
-
 	MainLoop:
 		; call PlayMusic
+		call UpdateTime
 		call UpdateMouse
 		call CheckClickOnButton
 		call DetectKey

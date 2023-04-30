@@ -53,14 +53,14 @@ DATASEG
 	MarioFileHandle	dw ?
 	MarioHeader db 54 dup(0)
 
-	LastAnimation dw ?
-
 	; Mario image data
 	CurrentImage dw "1"
 	LastImage dw "1"
 	MarioWidth db 12
 	MarioHeight db 16
 	MarioArea dw 192
+
+	; IsWalking db 1
 
 CODESEG
 
@@ -177,11 +177,9 @@ proc UpdateMarioImage
 	push bx
 	push cx
 	push dx
-	push es
 
 	mov ax, [CurrentImage]
 	mov [lastImage], ax
-	mov ax, [CurrentImage]
 
 	
 	cmp [IsJumping], 1
@@ -195,20 +193,16 @@ proc UpdateMarioImage
 	jmp @@Climbing
 
 	@@NotUp:
+
 	cmp [ButtonPressed], "L"
 	je @@Walking
 	
 	cmp [ButtonPressed], "R"
 	je @@Walking
 	
-	
-	; cmp [ButtonPressed], "D"
-	; jne @@NotDown
-	; jmp @@Climbing
+	; cmp [ButtonPressed], 0
+	; je @@Standing
 
-	; @@NotDown:
-	cmp [ButtonPressed], 0
-	je @@Standing
 
 	jmp @@Quit
 
@@ -264,8 +258,8 @@ proc UpdateMarioImage
 
 
 	@@Walking:
-		mov al, [LastButtonPressed]
-		cmp [ButtonPressed], al
+		mov ax, [CurrentImage]
+		cmp [LastImage], ax
 		je @@WalkingAnimation
 
 		cmp [ButtonPressed], "L"
@@ -276,15 +270,24 @@ proc UpdateMarioImage
 
 
 		@@WalkingAnimation:
-			mov ax, 40h
-			mov es, ax
 
-			mov ax, [Clock]
+			push 1
+			Call GetTime
 
-			cmp ax, [LastAnimation]
-			je @@Quit
-			mov [LastAnimation], ax
-	
+			cmp al, 1
+			jge @@Animation
+			jmp @@Quit
+
+
+			@@Animation:
+
+			push 1
+			call StopTimer
+			push 1
+			call ResetTimer
+			push 1
+			call StartTimer
+
 			cmp [ButtonPressed], "L"
 			je @@WalkingAnimationLeft
 			
@@ -292,7 +295,6 @@ proc UpdateMarioImage
 			je @@WalkingAnimationRight
 
 			@@WalkingAnimationLeft:
-
 				cmp [CurrentImage], "2"
 				je @@SwitchLeft
 
@@ -300,7 +302,7 @@ proc UpdateMarioImage
 				jmp @@Quit
 
 				@@SwitchLeft:
-					mov [CurrentImage], "2" ; 4
+					mov [CurrentImage], "4" ; 4
 					jmp @@Quit
 
 
@@ -312,12 +314,41 @@ proc UpdateMarioImage
 				jmp @@Quit
 
 				@@SwitchRight:
-					mov [CurrentImage], "1" ; 3
+					mov [CurrentImage], "3" ; 3
 					jmp @@Quit
 
 	@@Climbing:
+		cmp [ButtonPressed], "U"
+		je @@ClimbingAnimation
+		cmp [ButtonPressed], "D"
+		je @@ClimbingAnimation
+
+		jmp @@Quit
+
+		@@ClimbingAnimation:
+		push 1
+		Call GetTime
+
+		cmp al, 1
+		jl @@Quit
+
+		push 1
+		call StopTimer
+		push 1
+		call ResetTimer
+		push 1
+		call StartTimer
+
+		cmp [CurrentImage], "7"
+		je @@SwitchClimb
+
 		mov [CurrentImage], "7"
 		jmp @@Quit
+
+		@@SwitchClimb:
+			mov [CurrentImage], "8"
+			jmp @@Quit
+
 
 
 	@@Quit:
@@ -333,11 +364,11 @@ proc UpdateMarioImage
 		cmp [LastImage], "6"
 		je @@ShowMario
 		
-		; cmp [LastImage], "7"
-		; je @@ShowMario
+		cmp [LastImage], "7"
+		je @@ShowMario
 		
-		; cmp [LastImage], "8"
-		; je @@ShowMario
+		cmp [LastImage], "8"
+		je @@ShowMario
 		
 		jmp @@Resume
 
@@ -346,7 +377,6 @@ proc UpdateMarioImage
 			call ChangeMarioImage
 
 		@@Resume:
-			pop es
 			pop dx
 			pop cx
 			pop bx
@@ -434,7 +464,6 @@ proc RemoveMarioBackground
 	push cx
 	push dx
 	push si
-	push es
 	push di
 
 	xor si, si
@@ -494,7 +523,6 @@ proc RemoveMarioBackground
 
 
 	pop di
-	pop es
 	pop si
 	pop dx
 	pop cx
@@ -510,7 +538,6 @@ proc MoveMarioPixelLeft
 	push cx
 	push dx
 	push si
-	push es
 	push di
 
 
@@ -584,7 +611,6 @@ proc MoveMarioPixelLeft
 
 	@@Quit:
 		pop di
-		pop es
 		pop si
 		pop dx
 		pop cx
@@ -600,7 +626,6 @@ proc MoveMarioPixelRight
 	push cx
 	push dx
 	push si
-	push es
 	push di
 
 
@@ -680,7 +705,6 @@ proc MoveMarioPixelRight
 
 	@@Quit:
 		pop di
-		pop es
 		pop si
 		pop dx
 		pop cx
@@ -696,7 +720,6 @@ proc MoveMarioPixelDown
 	push cx
 	push dx
 	push si
-	push es
 	push di
 
 
@@ -769,7 +792,6 @@ proc MoveMarioPixelDown
 
 	@@Quit:
 		pop di
-		pop es
 		pop si
 		pop dx
 		pop cx
@@ -785,7 +807,6 @@ proc MoveMarioPixelUp
 	push cx
 	push dx
 	push si
-	push es
 	push di
 
 	push [MarioTopPointX]
@@ -851,7 +872,6 @@ proc MoveMarioPixelUp
 
 	@@Quit:
 		pop di
-		pop es
 		pop si
 		pop dx
 		pop cx
