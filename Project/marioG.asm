@@ -329,7 +329,7 @@ proc UpdateMarioImage
 		push 1
 		Call GetTime
 
-		cmp al, 1
+		cmp al, 2
 		jl @@Quit
 
 		push 1

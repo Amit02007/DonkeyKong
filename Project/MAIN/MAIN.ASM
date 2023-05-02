@@ -3,7 +3,7 @@ MODEL small
  
  
 
-STACK 0f500h
+STACK 90
  
 BMP_WIDTH = 320
 BMP_HEIGHT = 200
@@ -13,6 +13,7 @@ include "graphics.asm"
 include "mouse.asm"
 include "buttons.asm"
 include "mario.asm"
+include "dk.asm"
 include "keyboard.asm"
 include "timer.asm"
 ; include "sound.asm"
@@ -38,6 +39,7 @@ start:
 		call CheckClickOnButton
 		call DetectKey
 		call UpdateMario
+		call UpdateDk
 
 
 		cmp [IsRightButtonPressed], 1

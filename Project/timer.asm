@@ -271,7 +271,7 @@ proc UpdateTime
 			je @@Quit
 
 		inc [TicksCounter]
-		cmp [TicksCounter], 0FFFh
+		cmp [TicksCounter], 04FFh
 		jne @@quit
 
 	mov [TicksCounter], 0

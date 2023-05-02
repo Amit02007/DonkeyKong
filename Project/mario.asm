@@ -241,13 +241,9 @@ endp UpdateMario
 
 
 proc MoveMarioLeft
-	; cmp [MarioFileName + 5], "2"
-	; je @@CorrectImage
-			
-	; push "2"
-	; call ChangeMarioImage
-
 	@@CorrectImage:
+		call CheckStairs
+		call MoveMarioPixelLeft
 		call CheckStairs
 		call MoveMarioPixelLeft
 
@@ -256,13 +252,9 @@ endp MoveMarioLeft
 
 
 proc MoveMarioRight
-	; cmp [MarioFileName + 5], "1"
-	; je @@CorrectImage
-
-	; push "1"
-	; call ChangeMarioImage
-
 	@@CorrectImage:
+		call CheckStairs
+		call MoveMarioPixelRight
 		call CheckStairs
 		call MoveMarioPixelRight
 
@@ -286,6 +278,20 @@ proc MarioClimb
 
 	@@Up:
 		call MoveMarioPixelUp
+		call IsReachTopLadder
+		cmp al, 1
+		jne @@Quit
+
+		call MoveMarioPixelUp
+		call MoveMarioPixelUp
+		call MoveMarioPixelUp
+		call MoveMarioPixelUp
+		call MoveMarioPixelUp
+		call MoveMarioPixelUp
+		call MoveMarioPixelUp
+		call MoveMarioPixelUp
+		mov [MarioClimbState], 0
+
 		jmp @@Quit
 
 	@@Down:
@@ -449,6 +455,47 @@ proc IsStandingOnLadder
 		pop bx
 		ret
 endp IsStandingOnLadder
+
+
+proc IsReachTopLadder
+	push bx
+	push cx
+	push si
+	
+	xor cx, cx
+	mov cl, [MarioWidth]
+	mov bx, [MarioArea]
+	sub bx, cx
+	sub bx, cx
+	
+	mov si, [MarioArea]
+	sub si, cx
+
+	@@FindFloor:
+		mov al, [LastMarioPos + bx]
+
+		cmp al, [FloorColor]
+		je @@FoundFloor
+
+		inc bx
+		cmp bx, si
+		jne @@FindFloor
+
+	xor ax, ax
+	jmp @@Quit
+
+
+	@@FoundFloor:
+		mov ax, 1
+		jmp @@Quit
+	
+
+	@@Quit:
+		pop si
+		pop cx
+		pop bx
+		ret
+endp IsReachTopLadder
 
 
 proc CheckOnFloor
@@ -674,20 +721,3 @@ proc CheckStairs near
 		pop ax
 		ret
 endp CheckStairs
-
-
-proc MarioPhysics near
-
-	push [MarioTopPointX]
-	mov ax, [MarioTopPointY]
-	add ax, 17
-	push ax
-	call GetPixelColor
-	cmp al, [FloorColor]
-	je @@OnFloor
-
-
-
-	@@OnFloor:
-		ret
-endp MarioPhysics
