@@ -572,40 +572,42 @@ endp ShowBMP
 ; in matrix - the bytes
 ; in di start byte in screen (0 64000 -1)
 proc putMatrixInScreen
-	push es
-	push ax
-	push si
+		push es
+		push bp
+		push ax
+		push si
 	
-	mov ax, 0A000h
-	mov es, ax
-	cld
-	
-	push dx
-	mov ax,cx
-	mul dx
-	mov bp,ax
-	pop dx
-	
-	
-	mov si,[matrix]
-	
-NextRow:	
-	push cx
-	
-	mov cx, dx
-	rep movsb ; Copy line to the screen
-	sub di,dx
-	add di, 320
-	
-	
-	pop cx
-	loop NextRow
-	
-	
-endProc:	
-	
-	pop si
-	pop ax
-	pop es
-    ret
+		mov ax, 0A000h
+		mov es, ax
+		cld
+		
+		push dx
+		mov ax,cx
+		mul dx
+		mov bp,ax
+		pop dx
+		
+		
+		mov si,[matrix]
+		
+	NextRow:	
+		push cx
+		
+		mov cx, dx
+		rep movsb ; Copy line to the screen
+		sub di,dx
+		add di, 320
+		
+		
+		pop cx
+		loop NextRow
+		
+		
+	endProc:	
+		
+		pop si
+		pop ax
+		pop bp
+		pop es
+		ret
 endp putMatrixInScreen

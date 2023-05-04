@@ -20,9 +20,16 @@ CODESEG
 
 SwitchToGameScreen:
 
+	push 0
+	push 0
+	push Offset EmptyCursor
+	call ChangeCursor
+
 	mov [SelectedScreen], 1
 	call SwitchScreen
 	call UpdateBackgourndImage
+
+	call CreateBarrel
 	
 jmp ButtonOnClickReturn
 

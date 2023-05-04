@@ -75,7 +75,39 @@ DATASEG
 					dw 0000111100000000b
 					dw 0000000000000000b
 
-	EmptyCursor dw 16 dup (1), 16 dup (0)
+	EmptyCursor 	dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+					dw 1111111111111111b
+
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
+					dw 0000000000000000b
 
 
 	MousePosX dw ?
@@ -104,6 +136,9 @@ proc ChangeCursor
 	push dx
 	push es
 
+	cmp [CurrentScreen], 1
+	je @@Quit
+
 
 	mov ax, 9
 	push ds
@@ -113,15 +148,14 @@ proc ChangeCursor
 	mov dx, CursorOffset
 	int 33h
 
-
-	pop es
-	pop dx
-	pop cx
-	pop bx
-	pop ax
-	pop bp
-	ret 6
-	
+	@@Quit:
+		pop es
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		pop bp
+		ret 6
 endp ChangeCursor
 
 ;================================================

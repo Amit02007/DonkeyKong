@@ -14,13 +14,13 @@ include "mouse.asm"
 include "buttons.asm"
 include "mario.asm"
 include "dk.asm"
+include "barrels.asm"
 include "keyboard.asm"
 include "timer.asm"
 ; include "sound.asm"
 
 DATASEG
-	isfirst db 0
-	isfirst2 db 0
+
 CODESEG
  
 
@@ -32,6 +32,13 @@ start:
 	call InitButtons
 	; call InitSound
 
+	push 2
+	call StartTimer
+	push 3
+	call StartTimer
+	push 3
+	call StopTimer
+
 	MainLoop:
 		; call PlayMusic
 		call UpdateTime
@@ -41,6 +48,18 @@ start:
 		call UpdateMario
 		call UpdateDk
 
+		push 3
+		call GetTime
+		cmp al, 0F0h
+		jne @@NotB
+		call CreateBarrel
+
+		push 3
+		call StopTimer
+		push 3
+		call ResetTimer
+
+		@@NotB:
 
 		cmp [IsRightButtonPressed], 1
 		je exit

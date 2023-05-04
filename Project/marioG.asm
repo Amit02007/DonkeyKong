@@ -54,13 +54,11 @@ DATASEG
 	MarioHeader db 54 dup(0)
 
 	; Mario image data
-	CurrentImage dw "1"
-	LastImage dw "1"
+	CurrentMarioImage dw "1"
+	LastMarioImage dw "1"
 	MarioWidth db 12
 	MarioHeight db 16
 	MarioArea dw 192
-
-	; IsWalking db 1
 
 CODESEG
 
@@ -178,8 +176,8 @@ proc UpdateMarioImage
 	push cx
 	push dx
 
-	mov ax, [CurrentImage]
-	mov [lastImage], ax
+	mov ax, [CurrentMarioImage]
+	mov [LastMarioImage], ax
 
 	
 	cmp [IsJumping], 1
@@ -216,25 +214,25 @@ proc UpdateMarioImage
 		jmp @@Quit
 
 		@@ReturnFromJump:
-			cmp [CurrentImage], "6"
+			cmp [CurrentMarioImage], "6"
 			je @@StandingLeft
 			
-			cmp [CurrentImage], "5"
+			cmp [CurrentMarioImage], "5"
 			je @@StandingRight
 
 			jmp @@Quit
 
 		@@StandingLeft:
-			mov [CurrentImage], "2"
+			mov [CurrentMarioImage], "2"
 			jmp @@Quit
 
 		@@StandingRight:
-			mov [CurrentImage], "1"
+			mov [CurrentMarioImage], "1"
 			jmp @@Quit
 
 
 	@@Jumping:
-		mov ax, [CurrentImage]
+		mov ax, [CurrentMarioImage]
 
 		cmp ax, "2"
 		je @@JumpingLeft
@@ -249,17 +247,17 @@ proc UpdateMarioImage
 		je @@JumpingRight
 
 		@@JumpingLeft:
-			mov [CurrentImage], "6"
+			mov [CurrentMarioImage], "6"
 			jmp @@Quit
 
 		@@JumpingRight:
-			mov [CurrentImage], "5"
+			mov [CurrentMarioImage], "5"
 			jmp @@Quit
 
 
 	@@Walking:
-		mov ax, [CurrentImage]
-		cmp [LastImage], ax
+		mov ax, [CurrentMarioImage]
+		cmp [LastMarioImage], ax
 		je @@WalkingAnimation
 
 		cmp [ButtonPressed], "L"
@@ -274,7 +272,7 @@ proc UpdateMarioImage
 			push 1
 			Call GetTime
 
-			cmp al, 1
+			cmp al, 3
 			jge @@Animation
 			jmp @@Quit
 
@@ -295,26 +293,26 @@ proc UpdateMarioImage
 			je @@WalkingAnimationRight
 
 			@@WalkingAnimationLeft:
-				cmp [CurrentImage], "2"
+				cmp [CurrentMarioImage], "2"
 				je @@SwitchLeft
 
-				mov [CurrentImage], "2"
+				mov [CurrentMarioImage], "2"
 				jmp @@Quit
 
 				@@SwitchLeft:
-					mov [CurrentImage], "4" ; 4
+					mov [CurrentMarioImage], "4" ; 4
 					jmp @@Quit
 
 
 			@@WalkingAnimationRight:
-				cmp [CurrentImage], "1"
+				cmp [CurrentMarioImage], "1"
 				je @@SwitchRight
 
-				mov [CurrentImage], "1"
+				mov [CurrentMarioImage], "1"
 				jmp @@Quit
 
 				@@SwitchRight:
-					mov [CurrentImage], "3" ; 3
+					mov [CurrentMarioImage], "3" ; 3
 					jmp @@Quit
 
 	@@Climbing:
@@ -329,7 +327,7 @@ proc UpdateMarioImage
 		push 1
 		Call GetTime
 
-		cmp al, 2
+		cmp al, 15
 		jl @@Quit
 
 		push 1
@@ -339,41 +337,41 @@ proc UpdateMarioImage
 		push 1
 		call StartTimer
 
-		cmp [CurrentImage], "7"
+		cmp [CurrentMarioImage], "7"
 		je @@SwitchClimb
 
-		mov [CurrentImage], "7"
+		mov [CurrentMarioImage], "7"
 		jmp @@Quit
 
 		@@SwitchClimb:
-			mov [CurrentImage], "8"
+			mov [CurrentMarioImage], "8"
 			jmp @@Quit
 
 
 
 	@@Quit:
-		mov ax, [LastImage]
-		cmp [CurrentImage], ax
+		mov ax, [LastMarioImage]
+		cmp [CurrentMarioImage], ax
 		je @@Resume
 
 		call RefreshMario
 
-		cmp [LastImage], "5"
+		cmp [LastMarioImage], "5"
 		je @@ShowMario
 
-		cmp [LastImage], "6"
+		cmp [LastMarioImage], "6"
 		je @@ShowMario
 		
-		cmp [LastImage], "7"
+		cmp [LastMarioImage], "7"
 		je @@ShowMario
 		
-		cmp [LastImage], "8"
+		cmp [LastMarioImage], "8"
 		je @@ShowMario
 		
 		jmp @@Resume
 
 		@@ShowMario:
-			push [CurrentImage]
+			push [CurrentMarioImage]
 			call ChangeMarioImage
 
 		@@Resume:
@@ -405,7 +403,7 @@ proc RefreshMario
 	mov cl, [MarioHeight]  ;number of rows
 	call putMatrixInScreen
 
-	push [CurrentImage]
+	push [CurrentMarioImage]
 	call ChangeMarioData
 
 	xor cx, cx
@@ -446,7 +444,7 @@ proc RefreshMario
 
 	call CheckOnFloor
 
-	; push [CurrentImage]
+	; push [CurrentMarioImage]
 	; call ChangeMarioImage
 
 	pop si
@@ -606,7 +604,7 @@ proc MoveMarioPixelLeft
 		jne @@GetLeftPixels
 	
 	dec [MarioTopPointX]
-	push [CurrentImage]
+	push [CurrentMarioImage]
 	call ChangeMarioImage
 
 	@@Quit:
@@ -700,7 +698,7 @@ proc MoveMarioPixelRight
 		jne @@GetRightPixels
 	
 	inc [MarioTopPointX]
-	push [CurrentImage]
+	push [CurrentMarioImage]
 	call ChangeMarioImage
 
 	@@Quit:
@@ -787,7 +785,7 @@ proc MoveMarioPixelDown
 		jne @@GetDownPixels
 
 	inc [MarioTopPointY]
-	push [CurrentImage]
+	push [CurrentMarioImage]
 	call ChangeMarioImage
 
 	@@Quit:
@@ -867,7 +865,7 @@ proc MoveMarioPixelUp
 		jne @@GetUpPixels
 
 	dec [MarioTopPointY]
-	push [CurrentImage]
+	push [CurrentMarioImage]
 	call ChangeMarioImage
 
 	@@Quit:

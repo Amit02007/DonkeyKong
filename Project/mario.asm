@@ -84,6 +84,8 @@ proc InitMario
 
 	push 1
 	call StartTimer
+	push 3
+	call StartTimer
 
 	pop si
 	pop dx
@@ -122,6 +124,8 @@ proc UpdateMario
 
 	@@Init:
 		call UpdateMarioImage
+		call UpdateBarrelImage
+
 		
 		cmp [MarioClimbState], 1
 		jne @@NotClimb
@@ -218,6 +222,7 @@ proc UpdateMario
 
 			@@DontJump:
 				pop ax
+				jmp @@Quit
 
 		@@ClimbButton:
 
@@ -277,6 +282,9 @@ proc MarioClimb
 	jmp @@OnLadder
 
 	@@Up:
+		call IsBrokenLadder
+		cmp al, 1
+		je @@Quit
 		call MoveMarioPixelUp
 		call IsReachTopLadder
 		cmp al, 1
@@ -308,21 +316,43 @@ proc MarioClimb
 
 	@@Quit:
 		call CheckEndClimb
-		; call CheckOnFloor
-		; cmp al, 1
-		; je @@StopClimb
-
-		; call CheckIsReadyToClimb
-		; cmp [IsReadyToClimb], 0
-		; jne @@OnLadder
-
-		; @@StopClimb:
-		; mov [MarioClimbState], 0
 
 		@@OnLadder:
 		pop ax
 		ret
 endp MarioClimb
+
+
+proc IsBrokenLadder
+	push bx
+	push cx
+
+	xor ax, ax
+	
+	xor cx, cx
+	mov cl, [MarioWidth]
+
+	xor bx, [MarioArea]
+	sub bx, cx
+	sub bx, cx
+	@@CheckForLadder:
+		xor al, al
+		cmp al, [LastMarioPos + bx]
+		jne @@LadderFound
+
+		inc bx
+	loop @@CheckForLadder
+	
+	mov ax, 1
+	jmp @@Quit
+
+	@@LadderFound:
+		xor ax, ax
+	@@Quit:
+		pop cx
+		pop bx
+		ret
+endp IsBrokenLadder
 
 
 proc CheckEndClimb
@@ -633,9 +663,9 @@ proc MarioFalling near
 		cmp al, [FloorColor]
 		je @@OnFloor
 
-		call IsStandingOnLadder
-		cmp al, 1
-		je @@OnFloor
+		; call IsStandingOnLadder
+		; cmp al, 1
+		; je @@OnFloor
 
 		
 		; cmp al, [LadderColor]
