@@ -1,7 +1,7 @@
 IDEAL
 
 MODEL small
-STACK 256
+STACK 150h
 
 Clock equ es:6Ch
 
@@ -125,7 +125,6 @@ proc UpdateMario
 	@@Init:
 		call UpdateMarioImage
 		call UpdateBarrelImage
-
 		
 		cmp [MarioClimbState], 1
 		jne @@NotClimb

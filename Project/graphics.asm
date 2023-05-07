@@ -1,7 +1,7 @@
 IDEAL
 
 MODEL small
-STACK 256
+STACK 150h
 
 
 DATASEG
@@ -173,8 +173,6 @@ proc UpdateBackgourndImage
 	mov ax, 02h
 	int 33h
 
-	; Close the last background file
-	call CloseBmpFile
 
 	; Open and show the new background
 	mov dx, offset FileName
@@ -202,6 +200,9 @@ proc UpdateBackgourndImage
 		push 184
 		call GetPixelColor
 		mov [LadderColor], al
+
+		; Close the last background file
+		call CloseBmpFile
 
 		pop dx
 		pop ax

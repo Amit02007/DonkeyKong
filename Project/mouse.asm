@@ -1,7 +1,7 @@
 IDEAL
 
 MODEL small
-STACK 256
+STACK 150h
 
 
 DATASEG

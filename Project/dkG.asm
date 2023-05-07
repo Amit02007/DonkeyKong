@@ -425,6 +425,7 @@ proc RefreshDk
 	push cx
 	push dx
 	push si
+	push di
 
 	call CloseDkBmpFile
 
@@ -483,6 +484,7 @@ proc RefreshDk
 	; push [CurrentDkImage]
 	; call ChangeDkImage
 
+	pop di
 	pop si
 	pop dx
 	pop cx

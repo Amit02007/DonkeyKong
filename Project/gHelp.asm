@@ -1,12 +1,45 @@
 IDEAL
 
 MODEL small
-STACK 256
+STACK 150h
 
 
 DATASEG
 
+    OffsetToReturn dw ?
+    SavedAx dw ?
+    SavedCx dw ?
+    SavedBp dw ?
+
 CODESEG
+
+
+StackReturn equ [bp + 4] 
+proc Return
+    mov [SavedBp], bp
+    pop bp
+    mov bp, sp
+
+    mov [SavedAx], ax
+    mov [SavedCx], cx
+
+    mov ax, [bp + 2]
+    mov [OffsetToReturn], ax
+
+    mov cx, StackReturn
+    @@PopStack:
+        pop ax
+
+        sub cx, 2
+        cmp cx, 1
+        jb @@PopStack
+
+    mov ax, [SavedAx]
+    mov cx, [SavedCx]
+    mov bp, [SavedBp]
+    jmp [OffsetToReturn]
+
+endp Return
 
 
 yPoint equ [bp + 4] 
@@ -44,7 +77,8 @@ proc GetRollingDownDirection
         jmp @@Quit
 
 
-    @Quit:
+    @@Quit:
         pop bp
-        ret 2
-proc GetRollingDownDirection
+        push 2
+        call Return
+endp GetRollingDownDirection

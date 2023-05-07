@@ -1,7 +1,7 @@
 IDEAL
 
 MODEL small
-STACK 256
+STACK 150h
 
 MAX_BARRELS_ON_SCREEN = 4
 MAX_BARRELS_WIDTH = 16
@@ -15,12 +15,6 @@ DATASEG
     BarrelsLenght dw $ - Barrels
 
     BarrelFileName db "Barrel1.bmp", 0
-    
-	
-	; LastBarrelPos db MAX_BARRELS_HEIGHT dup (MAX_BARRELS_WIDTH dup (0))
-	; LastBarrelPos2 db MAX_BARRELS_HEIGHT dup (MAX_BARRELS_WIDTH dup (0))
-
-    ; BarrelMatrix db  MAX_BARRELS_ON_SCREEN dup (MAX_BARRELS_HEIGHT dup (MAX_BARRELS_WIDTH dup (0)))
 	
 	LastBarrelPos db MAX_BARRELS_ON_SCREEN dup (MAX_BARRELS_HEIGHT dup (MAX_BARRELS_WIDTH dup (0)))
 
@@ -31,9 +25,9 @@ DATASEG
 
     CurrentBarrelImage dw "1"
 	LastBarrelImage dw "1"
-	; BarrelWidth db 12
-	; BarrelHeight db 16
-	; BarrelArea dw 192
+	BarrelWidth db 12
+	BarrelHeight db 16
+	BarrelArea dw 192
 
 CODESEG
 
@@ -143,7 +137,8 @@ proc ChangeBarrelImage
 	mov [BmpRowSize], ax
 	call OpenShowBarrelBmp
 
-	; call RemoveBarrelBackground
+	push bx
+	call RemoveBarrelBackground
 
 	pop dx
 	pop bx
@@ -380,22 +375,18 @@ proc RemoveBarrelBackground
 	push si
 	push di
 
-	xor si, si
-	xor bx, bx
-	@@Column:
-		xor bx, bx
-		@@Row:
 
-		push bx
+	xor si, si
+	xor cx, cx
+	@@Column:
+		xor cx, cx
+		@@Row:
 		mov bx, BarrelStartPosition
+
 		mov ax, [Barrels + bx]
-		pop bx
-		add ax, bx
+		add ax, cx
 		push ax
-		push bx
-		mov bx, BarrelStartPosition
 		mov ax, [Barrels + bx + 2]
-		pop bx
 		add ax, si
 		push ax
 		call GetPixelColor
@@ -403,44 +394,38 @@ proc RemoveBarrelBackground
 		push si
 		push ax
 		mov dx, si
-		push bx
-		mov bx, BarrelStartPosition
 		mov ax, [Barrels + bx + 6]
-		pop bx
 		mul dl
-		add ax, bx
+		add ax, cx
 		mov si, ax
 		pop ax
+
+
+		mov dx, bx
+		push bx
+		call GetLastBarrelPosOffser
+		add si, bx
+		mov bx, dx
 
 		cmp al, 0
 		jne @@NoBackGound
 
-		push bx
-		mov bx, BarrelStartPosition
-		push bx
-		call GetLastBarrelPosOffser
-		mov al, [LastBarrelPos + si + bx]
-		pop bx
+		mov al, [LastBarrelPos + si]
 
 		@@NoBackGound:
-			push bx
-			mov bx, BarrelStartPosition
-			push bx
-			call GetLastBarrelPosOffser
-			mov [MarioMatrix + si + bx], al
-			pop bx
+			mov [BarrelMatrix + si], al
 			pop si
 
-			mov ax, bx
-			call showaxdecimal
-			inc bx
-			cmp bx, [Barrels + 6]
+			mov bx, BarrelStartPosition
+
+
+			inc cx
+			cmp cx, [Barrels + bx + 6]
 			jne @@Row
 
-	mov bx, BarrelStartPosition
-	mov bx, [Barrels + bx + 8]
+	mov cx, [Barrels + bx + 8]
 	inc si
-	cmp si, bx
+	cmp si, cx
 	jne @@Column
 
 	mov bx, BarrelStartPosition
@@ -451,6 +436,7 @@ proc RemoveBarrelBackground
 
 	lea cx, [BarrelMatrix] 
     mov bx, BarrelStartPosition
+
     push bx
     call GetLastBarrelPosOffser
 	add cx, bx
@@ -462,7 +448,6 @@ proc RemoveBarrelBackground
 	mov dx, [Barrels + bx + 6]   ; number of cols 
 	mov cx, [Barrels + bx + 8]  ;number of rows
 	call putMatrixInScreen
-
 
 	pop di
 	pop si

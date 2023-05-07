@@ -3,7 +3,7 @@ MODEL small
  
  
 
-STACK 90
+STACK 150h
  
 BMP_WIDTH = 320
 BMP_HEIGHT = 200
@@ -17,6 +17,7 @@ include "dk.asm"
 include "barrels.asm"
 include "keyboard.asm"
 include "timer.asm"
+include "gHelp.asm"
 ; include "sound.asm"
 
 DATASEG
@@ -31,6 +32,9 @@ start:
 	call InitGraphics
 	call InitButtons
 	; call InitSound
+	; push 47
+	; call GetRollingDownDirection
+	; call showaxdecimal
 
 	push 2
 	call StartTimer

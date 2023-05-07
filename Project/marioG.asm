@@ -1,7 +1,7 @@
 IDEAL
 
 MODEL small
-STACK 256
+STACK 150h
 
 
 DATASEG
@@ -389,6 +389,7 @@ proc RefreshMario
 	push cx
 	push dx
 	push si
+	push di
 
 	call CloseMarioBmpFile
 
@@ -447,6 +448,7 @@ proc RefreshMario
 	; push [CurrentMarioImage]
 	; call ChangeMarioImage
 
+	pop di
 	pop si
 	pop dx
 	pop cx
