@@ -3,6 +3,7 @@ IDEAL
 MODEL small
 STACK 150h
 
+Clock equ es:6Ch
 
 DATASEG
 

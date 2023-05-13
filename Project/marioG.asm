@@ -328,7 +328,7 @@ proc UpdateMarioImage
 		Call GetTime
 
 		cmp al, 15
-		jl @@Quit
+		jb @@Quit
 
 		push 1
 		call StopTimer
@@ -749,7 +749,7 @@ proc MoveMarioPixelDown
 			add bx, si
 			pop ax
 			cmp bx, ax
-			jl @@MovMatrixUp1D
+			jb @@MovMatrixUp1D
 		inc dx
 		mov bx, dx
 	loop @@MovMatrixUp2D

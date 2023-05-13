@@ -36,11 +36,9 @@ start:
 	; call GetRollingDownDirection
 	; call showaxdecimal
 
-	push 2
+	push 4
 	call StartTimer
-	push 3
-	call StartTimer
-	push 3
+	push 4
 	call StopTimer
 
 	MainLoop:
@@ -50,17 +48,18 @@ start:
 		call CheckClickOnButton
 		call DetectKey
 		call UpdateMario
+		call UpdateBarrels
 		call UpdateDk
 
-		push 3
+		push 4
 		call GetTime
 		cmp al, 0F0h
 		jne @@NotB
 		call CreateBarrel
 
-		push 3
+		push 4
 		call StopTimer
-		push 3
+		push 4
 		call ResetTimer
 
 		@@NotB:

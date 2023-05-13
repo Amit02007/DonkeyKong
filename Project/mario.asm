@@ -5,7 +5,6 @@ STACK 150h
 
 Clock equ es:6Ch
 
-
 include "marioG.asm"
 
 DATASEG
@@ -84,8 +83,6 @@ proc InitMario
 
 	push 1
 	call StartTimer
-	push 3
-	call StartTimer
 
 	pop si
 	pop dx
@@ -124,7 +121,6 @@ proc UpdateMario
 
 	@@Init:
 		call UpdateMarioImage
-		call UpdateBarrelImage
 		
 		cmp [MarioClimbState], 1
 		jne @@NotClimb
@@ -594,7 +590,7 @@ proc MarioJump near
 	je @@OnAir
 	mov [LastJump], ax
 
-	cmp [MarioJumpCounter], 7
+	cmp [MarioJumpCounter], 10
 	je @@StopJump
 
 	call MoveMarioPixelUp

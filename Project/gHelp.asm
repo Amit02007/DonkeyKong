@@ -47,6 +47,8 @@ proc GetRollingDownDirection
     push bp
     mov bp, sp
 
+    mov ax, yPoint
+
     cmp ax, 56
     jl @@Right
 
@@ -79,6 +81,5 @@ proc GetRollingDownDirection
 
     @@Quit:
         pop bp
-        push 2
-        call Return
+        ret 2
 endp GetRollingDownDirection

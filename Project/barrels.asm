@@ -26,8 +26,11 @@ DATASEG
     CurrentBarrelImage dw "1"
 	LastBarrelImage dw "1"
 	BarrelWidth db 12
-	BarrelHeight db 16
-	BarrelArea dw 192
+	BarrelHeight db 10
+	BarrelArea dw 120
+
+	IsBarrelInit db 0
+
 
 CODESEG
 
@@ -45,7 +48,7 @@ proc CreateBarrel
 
         add bx, 12
         cmp bx, [BarrelsLenght]
-        jle @@FindEmptyBarrel
+        jb @@FindEmptyBarrel
 
     jmp @@Quit
 
@@ -84,7 +87,7 @@ proc CreateBarrel
 
 				push bx
 				push cx
-				call GetLastBarrelPosOffser
+				call GetLastBarrelPosOffset
 				mov [LastBarrelPos + si + bx], al
 				pop bx
 				pop si
@@ -112,6 +115,71 @@ proc CreateBarrel
 endp CreateBarrel
 
 
+proc InitBarrel
+	push ax
+	push bx
+	push dx
+	push si
+
+	push 2
+	call StartTimer
+	push 3
+	call StartTimer
+	push 4
+	call StartTimer
+
+	pop si
+	pop dx
+	pop bx
+	pop ax
+	ret
+endp InitBarrel
+
+
+proc UpdateBarrels
+
+	cmp [CurrentScreen], 1
+	je @@NotRemoveBarrel
+
+	; TODO: Change the location of DetectDirection
+	cmp [CurrentScreen], 3
+	je @@Pause
+	jmp @@RemoveBarrel
+
+	@@Pause:
+		cmp [IsBarrelInit], 2
+		jne @@Remove
+		jmp @@Quit
+
+		@@Remove:
+			call CloseBarrelBmpFile
+			mov [IsBarrelInit], 2
+			jmp @@Quit
+
+	@@NotRemoveBarrel:
+
+	cmp [IsBarrelInit], 1
+	je @@Init
+	call InitBarrel
+	mov [IsBarrelInit], 1
+
+	@@Init:
+		call UpdateBarrelImage
+		
+		call MoveBarrels
+
+
+	jmp @@Quit
+
+	@@RemoveBarrel:
+		mov [IsBarrelInit], 0
+		call CloseBarrelBmpFile
+
+	@@Quit:
+		ret
+endp UpdateBarrels
+
+
 BarrelStartPosition equ [bp + 6]
 Image equ [bp + 4]
 proc ChangeBarrelImage
@@ -137,7 +205,7 @@ proc ChangeBarrelImage
 	mov [BmpRowSize], ax
 	call OpenShowBarrelBmp
 
-	push bx
+	push BarrelStartPosition
 	call RemoveBarrelBackground
 
 	pop dx
@@ -147,82 +215,59 @@ proc ChangeBarrelImage
 	ret 4
 endp ChangeBarrelImage
 
-; Image equ [bp + 4]
-; proc ChangeBarrelData
-; 	push bp
-; 	mov bp, sp
-; 	push ax
-; 	push bx
-; 	push cx
-; 	push dx
-; 	push si
 
-; 	mov ax, Image
+BarrelStartPosition equ [bp + 6]
+Image equ [bp + 4]
+proc ChangeBarrelData
+	push bp
+	mov bp, sp
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
 
-; 	cmp ax, "1"
-; 	je @@Standing
+	mov ax, Image
+	mov bx, BarrelStartPosition
 
-; 	cmp ax, "2"
-; 	je @@Standing
+	cmp ax, "1"
+	je @@RollingSide
 
-; 	cmp ax, "3"
-; 	je @@Walking
+	cmp ax, "2"
+	je @@RollingSide
 
-; 	cmp ax, "4"
-; 	je @@Walking
-	
-; 	cmp ax, "5"
-; 	je @@Jumping
-	
-; 	cmp ax, "6"
-; 	je @@Jumping
-	
-; 	cmp ax, "7"
-; 	je @@Climbing
-	
-; 	cmp ax, "8"
-; 	je @@Climbing
+	cmp ax, "3"
+	je @@RollingDown
 
-; 	jmp @@Quit
+	cmp ax, "4"
+	je @@RollingDown
 
-; 	@@Standing:
-; 		mov [BarrelWidth], 12
-; 		mov	[BarrelHeight], 16
-; 		mov	[BarrelArea], 192
+	jmp @@Quit
 
-; 		jmp @@Quit
+	@@RollingSide:
+		mov [Barrels + bx + 6], 12
+        mov [Barrels + bx + 8], 10
+        mov [Barrels + bx + 10], 120
 
-; 	@@Walking:
-; 		mov [BarrelWidth], 15
-; 		mov	[BarrelHeight], 16
-; 		mov	[BarrelArea], 240
+		jmp @@Quit
 
-; 		jmp @@Quit
-	
-; 	@@Jumping:
-; 		mov [BarrelWidth], 16
-; 		mov	[BarrelHeight], 16
-; 		mov	[BarrelArea], 256
+	@@RollingDown:
+		mov [Barrels + bx + 6], 12
+        mov [Barrels + bx + 8], 10
+        mov [Barrels + bx + 10], 120
 
-; 		jmp @@Quit
-	
-; 	@@Climbing:
-; 		mov [BarrelWidth], 13
-; 		mov	[BarrelHeight], 16
-; 		mov	[BarrelArea], 208
-
-; 		jmp @@Quit
+		jmp @@Quit
 
 
-; 	@@Quit:
-; 		pop si
-; 		pop dx
-; 		pop cx
-; 		pop bx
-; 		pop ax
-; 		pop bp
-; 		ret 2
-; endp ChangeBarrelData
+	@@Quit:
+		pop si
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		pop bp
+		ret 4
+endp ChangeBarrelData
 
 
 proc UpdateBarrelImage
@@ -234,27 +279,51 @@ proc UpdateBarrelImage
 	mov ax, [CurrentBarrelImage]
 	mov [LastBarrelImage], ax
 
-    push 2
-    Call GetTime
 
-    cmp al, 7
-    jl @@Quit
+	push 3
+	Call GetTime
 
-    push 2
-    call StopTimer
-    push 2
-    call ResetTimer
-    push 2
-    call StartTimer
+	cmp al, 18
+	jge @@Animation
+	jmp @@Quit
 
-    push 0
-    call MoveBarrelPixelRight
 
-	cmp [word ptr Barrels + 12], 0
-	je @@Quit
-    push 12
-    call MoveBarrelPixelRight
+	@@Animation:
 
+	push 3
+	call StopTimer
+	push 3
+	call ResetTimer
+	push 3
+	call StartTimer
+
+	xor bx, bx
+    @@FindEmptyBarrel:
+        cmp [word ptr Barrels + bx], 0
+        jne @@Found
+
+        add bx, 12
+        cmp bx, [BarrelsLenght]
+        jb @@FindEmptyBarrel
+
+    jmp @@Quit
+
+
+    @@Found:
+		cmp [Barrels + bx + 4], "1"
+		jne @@Replace
+
+		mov [Barrels + bx + 4], "2"
+		add bx, 12
+		cmp bx, [BarrelsLenght]
+		jbe @@FindEmptyBarrel
+		jmp @@quit
+
+		@@Replace:
+			mov [Barrels + bx + 4], "1"
+			add bx, 12
+			cmp bx, [BarrelsLenght]
+			jbe @@FindEmptyBarrel
 
 
 	@@Quit:
@@ -262,7 +331,7 @@ proc UpdateBarrelImage
 		cmp [CurrentBarrelImage], ax
 		je @@Resume
 
-		; call RefreshBarrel
+		call RefreshBarrel
 
 		; cmp [LastBarrelImage], "5"
 		; je @@ShowBarrel
@@ -291,77 +360,182 @@ proc UpdateBarrelImage
 endp UpdateBarrelImage
 
 
-; proc RefreshBarrel
-; 	push ax
-; 	push bx
-; 	push cx
-; 	push dx
-; 	push si
+proc MoveBarrels
+	push ax
+	push bx
 
-; 	call CloseBarrelBmpFile
 
-; 	push [BarrelTopPointX]
-; 	push [BarrelTopPointY]
-; 	call ConvertMatrixPos
-; 	lea cx, [LastBarrelPos] 
-; 	mov [Matrix], cx ; put the bytes offset in Matrix
-; 	xor dx, dx
-; 	mov dl, [BarrelWidth]   ; number of cols 
-; 	xor cx, cx 
-; 	mov cl, [BarrelHeight]  ;number of rows
-; 	call putMatrixInScreen
+	push 2
+    Call GetTime
 
-; 	push [CurrentBarrelImage]
-; 	call ChangeBarrelData
+    cmp al, 1
+    jb @@Quit
 
-; 	xor cx, cx
-; 	mov cl, [BarrelWidth]
+    push 2
+    call StopTimer
+    push 2
+    call ResetTimer
+    push 2
+    call StartTimer
 
-; 	xor si, si
-; 	@@Column:
-; 		xor bx, bx
-; 			@@Row:
-; 				mov ax, [BarrelTopPointX]
-; 				add ax, bx
-; 				push ax
-; 				mov ax, [BarrelTopPointY]
-; 				add ax, si
-; 				push ax
-; 				call GetPixelColor
 
-; 				push si
-; 				push ax
-; 				mov dx, si
-; 				mov al, [BarrelWidth]
-; 				mul dl
-; 				add ax, bx
-; 				mov si, ax
-; 				pop ax
+	xor bx, bx
+    @@FindEmptyBarrel:
+        cmp [word ptr Barrels + bx], 0
+        jne @@Found
 
-; 				mov [LastBarrelPos + si], al
-; 				pop si
-; 				inc bx
-; 				cmp bx, cx
-; 				jne @@Row
+        add bx, 12
+        cmp bx, [BarrelsLenght]
+        jb @@FindEmptyBarrel
+
+    jmp @@Quit
+
+
+    @@Found:
+		push [Barrels + bx + 2]
+		call GetRollingDownDirection
+
+		cmp ax, "L"
+		je @@Left
+
+		cmp ax, "R"
+		je @@Right
+
+		jmp @@Quit
+
+		@@Left:
+			push bx
+			call MoveBarrelPixelLeft
+			push bx
+			call BarrelFalling
+			add bx, 12
+			cmp bx, [BarrelsLenght]
+			jbe @@FindEmptyBarrel
+
+			jmp @@Quit
+
+		@@Right:
+			push bx
+			call MoveBarrelPixelRight
+			push bx
+			call BarrelFalling
+			add bx, 12
+			cmp bx, [BarrelsLenght]
+			jbe @@FindEmptyBarrel
+
+			jmp @@Quit
+
+			
+
+	@@Quit:
+		pop bx
+		pop ax
+		ret
+endp MoveBarrels
+
+
+BarrelStartPosition equ [bp + 4]
+proc RefreshBarrel
+	push bp
+	mov bp, sp
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
+	push di
+
+	call CloseBarrelBmpFile
+
+	mov bx, BarrelStartPosition
+
+	push [Barrels + bx]
+	push [Barrels + 2 + bx]
+	call ConvertMatrixPos
+
+	lea cx, [BarrelMatrix]
+	
+    push BarrelStartPosition
+    call GetLastBarrelPosOffset
+	add cx, bx
+
+	mov [Matrix], cx ; put the bytes offset in Matrix
+
+    mov bx, BarrelStartPosition
+
+	mov dx, [Barrels + bx + 6]   ; number of cols 
+	mov cx, [Barrels + bx + 8]  ;number of rows
+	call putMatrixInScreen
+
+	
+	push BarrelStartPosition
+	push [Barrels + bx + 4]
+	call ChangeBarrelData
+
+	mov cx, [Barrels + bx + 6]
+
+	xor si, si
+	@@Column:
+		xor bx, bx
+			@@Row:
+				push bx
+				mov bx, BarrelStartPosition
+				mov ax, [Barrels + bx]
+				pop bx
+				add ax, bx
+				push ax
+				push bx
+				mov bx, BarrelStartPosition
+				mov ax, [Barrels + bx + 2]
+				pop bx
+				add ax, si
+				push ax
+				call GetPixelColor
+
+				push si
+				push ax
+				mov dx, si
+				push bx
+				mov bx, BarrelStartPosition
+				mov ax, [Barrels + bx + 6]
+				pop bx
+				mul dl
+				add ax, bx
+				mov si, ax
+				pop ax
+
+				push bx
+				push bx
+				mov bx, BarrelStartPosition
+				call GetLastBarrelPosOffset
+
+				mov [LastBarrelPos + si + bx], al
+				pop bx
+				pop si
+				inc bx
+				cmp bx, cx
+				jne @@Row
 		
-; 		xor bx, bx
-; 		mov bl, [BarrelHeight]
-; 		inc si
-; 		cmp si, bx
-; 	jne @@Column
+		mov bx, BarrelStartPosition
+		mov bx, [Barrels + bx + 8]
+		inc si
+		cmp si, bx
+	jne @@Column
 
-; 	call CheckOnFloor
+	; call CheckOnFloor
 
-; 	; push [CurrentBarrelImage]
-; 	; call ChangeBarrelImage
+	; push [CurrentBarrelImage]
+	; call ChangeBarrelImage
 
-; 	pop si
-; 	pop dx
-; 	pop cx
-; 	pop bx
-; 	pop ax
-; 	ret
-; endp RefreshBarrel
+	pop di
+	pop si
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	pop bp
+	ret 2
+endp RefreshBarrel
 
 
 BarrelStartPosition equ [bp + 4]
@@ -401,23 +575,19 @@ proc RemoveBarrelBackground
 		pop ax
 
 
-		mov dx, bx
-		push bx
-		call GetLastBarrelPosOffser
-		add si, bx
-		mov bx, dx
+		push BarrelStartPosition
+		call GetLastBarrelPosOffset
 
 		cmp al, 0
 		jne @@NoBackGound
 
-		mov al, [LastBarrelPos + si]
+		mov al, [LastBarrelPos + si + bx]
 
 		@@NoBackGound:
-			mov [BarrelMatrix + si], al
+			mov [BarrelMatrix + si + bx], al
 			pop si
 
 			mov bx, BarrelStartPosition
-
 
 			inc cx
 			cmp cx, [Barrels + bx + 6]
@@ -434,11 +604,10 @@ proc RemoveBarrelBackground
 	push [Barrels + 2 + bx]
 	call ConvertMatrixPos
 
-	lea cx, [BarrelMatrix] 
-    mov bx, BarrelStartPosition
-
-    push bx
-    call GetLastBarrelPosOffser
+	lea cx, [BarrelMatrix]
+	
+    push BarrelStartPosition
+    call GetLastBarrelPosOffset
 	add cx, bx
 
 	mov [Matrix], cx ; put the bytes offset in Matrix
@@ -460,11 +629,14 @@ proc RemoveBarrelBackground
 endp RemoveBarrelBackground
 
 BarrelStartPosition equ [bp + 4]
-proc GetLastBarrelPosOffser
+proc GetLastBarrelPosOffset
     push bp
     mov bp, sp
     push ax
     push cx
+	push dx
+
+	xor bx, bx
 
     ; Getting barrel number
     mov ax, BarrelStartPosition
@@ -482,99 +654,129 @@ proc GetLastBarrelPosOffser
     mov bx, ax
 
     @@Quit:
+		pop dx
         pop cx
         pop ax
         pop bp
         ret 2
-endp GetLastBarrelPosOffser
+endp GetLastBarrelPosOffset
 
 
-; proc MoveBarrelPixelLeft
-; 	push ax
-; 	push bx
-; 	push cx
-; 	push dx
-; 	push si
-; 	push di
+BarrelStartPosition equ [bp + 4]
+proc MoveBarrelPixelLeft
+	push bp
+	mov bp, sp
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
+	push di
 
 
-; 	push [BarrelTopPointX]
-; 	push [BarrelTopPointY]
-; 	call ConvertMatrixPos
-; 	lea cx, [LastBarrelPos] 
-; 	mov [Matrix], cx ; put the bytes offset in Matrix
-; 	xor dx, dx
-; 	mov dl, [BarrelWidth]   ; number of cols 
-; 	xor cx, cx 
-; 	mov cl, [BarrelHeight]  ;number of rows
-; 	call putMatrixInScreen
+    mov bx, BarrelStartPosition
 
-; 	xor bx, bx
-; 	xor cx, cx
-; 	xor ax, ax
-; 	mov al, [BarrelWidth]
-; 	inc ax
-; 	mov cl, [BarrelHeight]
-; 	@@MovMatrixRight2D:
-; 		mov dx, bx
-; 		dec dx
-; 		add bl, [BarrelWidth]
-; 		sub bx, 2
-; 		@@MovMatrixRight1D:
-; 			mov al, [LastBarrelPos + bx]
-; 			mov [LastBarrelPos + bx + 1], al
-; 			dec bx
-; 			cmp bx, dx
-; 			jne @@MovMatrixRight1D
+	push [Barrels + bx]
+	push [Barrels + bx + 2]
+	call ConvertMatrixPos
 
-; 		; add bx, BarrelWidth + 1
-; 		xor ax, ax
-; 		mov al, [BarrelWidth]
-; 		add ax, 1
-; 		add bx, ax
-; 	loop @@MovMatrixRight2D
+	lea cx, [LastBarrelPos] 
+    push bx
+    call GetLastBarrelPosOffset
+	add cx, bx
 
-; 	mov cx, [BarrelTopPointX]
-; 	dec cx
+	mov [Matrix], cx ; put the bytes offset in Matrix
 
-; 	xor bx, bx
-; 	mov bl, [BarrelHeight]
-; 	xor si, si
-; 	@@GetLeftPixels:
+    mov bx, BarrelStartPosition
 
-; 		push cx
-; 		mov ax, [BarrelTopPointY]
-; 		add ax, si
-; 		push ax
-; 		call GetPixelColor
+	mov dx, [Barrels + bx + 6]   ; number of cols 
+	mov cx, [Barrels + bx + 8]  ;number of rows
+	call putMatrixInScreen
 
-; 		push si
-; 		push ax
-; 		mov dx, si
-; 		mov al, [BarrelWidth]
-; 		mul dl
-; 		mov si, ax
-; 		pop ax
 
-; 		mov [LastBarrelPos + si], al
-; 		pop si
-; 		inc si
-; 		cmp si, bx
-; 		jne @@GetLeftPixels
+	mov bx, BarrelStartPosition
+
+	push bx
+	call GetLastBarrelPosOffset
+	mov di, bx
+
+	mov bx, BarrelStartPosition
+	mov ax, [Barrels + bx + 6]
+	inc ax
+	mov cx, [Barrels + bx + 8]
+	xor si, si
+	@@MovMatrixRight2D:
+		mov dx, si
+		dec dx
+		add si, [Barrels + bx + 6]
+		sub si, 2
+
+		push bx
+		mov bx, di
+		@@MovMatrixRight1D:
+			mov al, [LastBarrelPos + si + bx]
+			mov [LastBarrelPos + si + bx + 1], al
+			dec si
+			cmp si, dx
+			jne @@MovMatrixRight1D
+
+		; add si, BarrelWidth + 1
+		pop bx
+		mov bx, BarrelStartPosition
+		mov ax, [Barrels + bx + 6]
+		add ax, 1
+		add si, ax
+	loop @@MovMatrixRight2D
+
+	mov si, BarrelStartPosition
+	mov cx, [Barrels + si]
+	dec cx
+
+	mov di, [Barrels + si + 8]
+	xor si, si
+	@@GetLeftPixels:
+
+		mov bx, BarrelStartPosition
+
+		push cx
+		mov ax, [Barrels + bx + 2]
+		add ax, si
+		push ax
+		call GetPixelColor
+
+		push si
+		push ax
+		mov dx, si
+		mov ax, [Barrels + bx + 6]
+		mul dl
+		mov si, ax
+		pop ax
+
+		push BarrelStartPosition
+		call GetLastBarrelPosOffset
+
+		mov [LastBarrelPos + si + bx], al
+		pop si
+		inc si
+		cmp si, di
+		jne @@GetLeftPixels
 	
-; 	dec [BarrelTopPointX]
-; 	push [CurrentBarrelImage]
-; 	call ChangeBarrelImage
+	mov bx, BarrelStartPosition
+	dec [Barrels + bx]
+	push bx
+	push [Barrels + bx + 4]
+	call ChangeBarrelImage
 
-; 	@@Quit:
-; 		pop di
-; 		pop si
-; 		pop dx
-; 		pop cx
-; 		pop bx
-; 		pop ax
-; 		ret
-; endp MoveBarrelPixelLeft
+	@@Quit:
+		pop di
+		pop si
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		pop bp
+		ret 2
+endp MoveBarrelPixelLeft
 
 
 BarrelStartPosition equ [bp + 4]
@@ -597,7 +799,7 @@ proc MoveBarrelPixelRight
 	lea cx, [LastBarrelPos] 
     mov bx, BarrelStartPosition
     push bx
-    call GetLastBarrelPosOffser
+    call GetLastBarrelPosOffset
 	add cx, bx
 
 	mov [Matrix], cx ; put the bytes offset in Matrix
@@ -609,7 +811,7 @@ proc MoveBarrelPixelRight
 	call putMatrixInScreen
 
     push bx
-    call GetLastBarrelPosOffser
+    call GetLastBarrelPosOffset
     mov si, bx
 
 	mov bx, BarrelStartPosition
@@ -674,7 +876,7 @@ proc MoveBarrelPixelRight
         push bx
 		mov bx, BarrelStartPosition
         push bx
-        call GetLastBarrelPosOffser
+        call GetLastBarrelPosOffset
         add si, bx
         pop bx
 
@@ -707,171 +909,187 @@ proc MoveBarrelPixelRight
 endp MoveBarrelPixelRight
 
 
-; proc MoveBarrelPixelDown
-; 	push ax
-; 	push bx
-; 	push cx
-; 	push dx
-; 	push si
-; 	push di
+BarrelStartPosition equ [bp + 4]
+proc MoveBarrelPixelDown
+	push bp
+	mov bp, sp
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
+	push di
 
 
-; 	push [BarrelTopPointX]
-; 	push [BarrelTopPointY]
-; 	call ConvertMatrixPos
-; 	lea cx, [LastBarrelPos] 
-; 	mov [Matrix], cx ; put the bytes offset in Matrix
-; 	xor dx, dx
-; 	mov dl, [BarrelWidth]   ; number of cols 
-; 	xor cx, cx 
-; 	mov cl, [BarrelHeight]  ;number of rows
-; 	call putMatrixInScreen
+    mov bx, BarrelStartPosition
 
-; 	xor bx, bx
-; 	xor dx, dx
-; 	xor cx, cx
-; 	mov cl, [BarrelWidth]
-; 	mov si, cx
-; 	mov ax, [BarrelArea]
-; 	sub ax, si
-; 	@@MovMatrixUp2D:
-; 		@@MovMatrixUp1D:
-; 			push ax
-; 			mov al, [LastBarrelPos + bx + si]
-; 			mov [LastBarrelPos + bx], al
-; 			add bx, si
-; 			pop ax
-; 			cmp bx, ax
-; 			jl @@MovMatrixUp1D
-; 		inc dx
-; 		mov bx, dx
-; 	loop @@MovMatrixUp2D
+	push [Barrels + bx]
+	push [Barrels + 2 + bx]
+	call ConvertMatrixPos
 
-; 	xor ax, ax
+	lea cx, [LastBarrelPos] 
+    mov bx, BarrelStartPosition
+    push bx
+    call GetLastBarrelPosOffset
+	add cx, bx
 
-; 	mov al, [BarrelHeight]
-; 	mov cx, [BarrelTopPointY]
-; 	add cx, ax
+	mov [Matrix], cx ; put the bytes offset in Matrix
 
-; 	mov dx, [BarrelArea]
-; 	mov al, [BarrelWidth]
-; 	sub dx, ax
+    mov bx, BarrelStartPosition
 
-; 	xor si, si
-; 	@@GetDownPixels:
-
-; 		mov ax, [BarrelTopPointX]
-; 		add ax, si
-; 		push ax
-; 		push cx
-; 		call GetPixelColor
-
-; 		push si
-; 		add si, dx
-
-; 		mov [LastBarrelPos + si], al
-; 		pop si
-; 		inc si
-
-; 		xor ax, ax
-; 		mov al, [BarrelWidth]
-
-; 		cmp si, ax
-; 		jne @@GetDownPixels
-
-; 	inc [BarrelTopPointY]
-; 	push [CurrentBarrelImage]
-; 	call ChangeBarrelImage
-
-; 	@@Quit:
-; 		pop di
-; 		pop si
-; 		pop dx
-; 		pop cx
-; 		pop bx
-; 		pop ax
-; 		ret
-; endp MoveBarrelPixelDown
+	mov dx, [Barrels + bx + 6]   ; number of cols 
+	mov cx, [Barrels + bx + 8]  ;number of rows
+	call putMatrixInScreen
 
 
-; proc MoveBarrelPixelUp
-; 	push ax
-; 	push bx
-; 	push cx
-; 	push dx
-; 	push si
-; 	push di
+    mov bx, BarrelStartPosition
 
-; 	push [BarrelTopPointX]
-; 	push [BarrelTopPointY]
-; 	call ConvertMatrixPos
-; 	lea cx, [LastBarrelPos] 
-; 	mov [Matrix], cx ; put the bytes offset in Matrix
-; 	xor dx, dx
-; 	mov dl, [BarrelWidth]   ; number of cols 
-; 	xor cx, cx 
-; 	mov cl, [BarrelHeight]  ;number of rows
-; 	call putMatrixInScreen
+	mov cx, [Barrels + bx + 6]
+	mov si, cx
+	mov ax, [Barrels + bx + 10]
+	sub ax, si
+	xor bx, bx
+	xor dx, dx
+	@@MovMatrixUp2D:
+		@@MovMatrixUp1D:
+			push ax
+
+			mov ax, bx
+
+			push bx
+
+			mov bx, BarrelStartPosition
+			push bx
+			call GetLastBarrelPosOffset
+
+			add bx, ax
+
+			mov al, [LastBarrelPos + bx + si]
+			mov [LastBarrelPos + bx], al
+
+			pop bx
+
+			add bx, si
+			pop ax
+			cmp bx, ax
+			jb @@MovMatrixUp1D
+		inc dx
+		mov bx, dx
+	loop @@MovMatrixUp2D
+
+    mov bx, BarrelStartPosition
+
+	mov ax, [Barrels + bx + 8]
+	mov cx, [Barrels + bx + 2]
+	add cx, ax
+
+	mov dx, [Barrels + bx + 10]
+	mov ax, [Barrels + bx + 6]
+	sub dx, ax
+
+	xor si, si
+	@@GetDownPixels:
+
+    	mov bx, BarrelStartPosition
+
+		mov ax, [Barrels + bx]
+		add ax, si
+		push ax
+		push cx
+		call GetPixelColor
+
+		push si
+		add si, dx
+
+		push bx
+		call GetLastBarrelPosOffset
+
+		mov [LastBarrelPos + si + bx], al
+		pop si
+		inc si
+
+		mov bx, BarrelStartPosition
+
+		mov ax, [Barrels + bx + 6]
+
+		cmp si, ax
+		jne @@GetDownPixels
+
+	mov bx, BarrelStartPosition
+	inc [Barrels + bx + 2]
+	push bx
+	push [Barrels + bx + 4]
+	call ChangeBarrelImage
+
+	@@Quit:
+		pop di
+		pop si
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		pop bp
+		ret 2
+endp MoveBarrelPixelDown
 
 
-; 	xor ax, ax
-; 	mov al, [BarrelWidth]
-; 	mov si, ax
+BarrelStartPosition equ [bp + 4]
+proc BarrelFalling
+	push bp
+	mov bp, sp
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
 
-; 	mov dx, [BarrelArea]
-; 	sub dx, ax
-; 	mov bx, dx
-; 	sub bx, ax
+    mov si, BarrelStartPosition
 
-; 	xor cx, cx
-; 	mov cl, [BarrelHeight]
-; 	@@MovMatrixUp2D:
-; 		@@MovMatrixUp1D:
-; 			mov al, [LastBarrelPos + bx]
-; 			mov [LastBarrelPos + bx + si], al
-; 			inc bx
-; 			cmp bx, dx
-; 			jne @@MovMatrixUp1D
-; 		mov dx, bx
-; 		sub bx, si
-; 		sub bx, si
-; 		sub dx, si
-; 	loop @@MovMatrixUp2D
+	mov dx, [Barrels + si + 8]
+
+	mov bx, 2
+	@@Fall:		
+		mov dx, [Barrels + si + 8]
+
+		mov cx, [Barrels + si + 2]
+		add cx, dx
+
+		push [Barrels + si]
+		push cx
+		call GetPixelColor
+
+		cmp al, [FloorColor]
+		je @@OnFloor
+
+		mov dx, [Barrels + si + 6]
+		dec dx
+
+		mov ax, [Barrels + si]
+		add ax, dx
+		push ax
+		push cx
+		call GetPixelColor
+
+		cmp al, [FloorColor]
+		je @@OnFloor
+
+		push BarrelStartPosition
+		call MoveBarrelPixelDown
+
+	dec bx
+	cmp bx, 0
+	jne @@Fall
 
 
-
-; 	xor dx, dx
-; 	mov dl, [BarrelWidth]
-
-; 	mov cx, [BarrelTopPointY]
-; 	dec cx
-; 	xor si, si
-; 	@@GetUpPixels:
-
-; 		mov ax, [BarrelTopPointX]
-; 		add ax, si
-; 		push ax
-; 		push cx
-; 		call GetPixelColor
-
-; 		mov [LastBarrelPos + si], al
-; 		inc si
-; 		cmp si, dx
-; 		jne @@GetUpPixels
-
-; 	dec [BarrelTopPointY]
-; 	push [CurrentBarrelImage]
-; 	call ChangeBarrelImage
-
-; 	@@Quit:
-; 		pop di
-; 		pop si
-; 		pop dx
-; 		pop cx
-; 		pop bx
-; 		pop ax
-; 		ret
-; endp MoveBarrelPixelUp
+	@@OnFloor:
+		pop si
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		pop bp
+		ret 2
+endp BarrelFalling
 
 
 proc CloseBarrelBmpFile
@@ -883,6 +1101,7 @@ endp CloseBarrelBmpFile
 
 
 proc OpenShowBarrelBmp
+	push bp
 
 	call OpenBmpBarrelFile
 	cmp [ErrorFile],1
@@ -899,6 +1118,7 @@ proc OpenShowBarrelBmp
 	call CloseBarrelBmpFile
 
 	@@ExitProc:
+		pop bp
 		ret
 endp OpenShowBarrelBmp
 
