@@ -93,6 +93,7 @@ endp InitMario
 
 
 proc UpdateMario
+	push ax
 
 	cmp [CurrentScreen], 1
 	je @@NotRemoveMario
@@ -236,38 +237,41 @@ proc UpdateMario
 		call CloseMarioBmpFile
 
 	@@Quit:
+		pop ax
 		ret
 endp UpdateMario
 
 
 proc MoveMarioLeft
-	@@CorrectImage:
-		call CheckStairs
-		call MoveMarioPixelLeft
-		call CheckStairs
-		call MoveMarioPixelLeft
+	cmp [MarioTopPointX], 65
+	je @@Quit
 
-	ret
+	call CheckStairs
+	call MoveMarioPixelLeft
+	call CheckStairs
+	call MoveMarioPixelLeft
+
+	@@Quit:
+		ret
 endp MoveMarioLeft
 
 
 proc MoveMarioRight
-	@@CorrectImage:
-		call CheckStairs
-		call MoveMarioPixelRight
-		call CheckStairs
-		call MoveMarioPixelRight
+	cmp [MarioTopPointX], 249
+	jge @@Quit
+	
+	call CheckStairs
+	call MoveMarioPixelRight
+	call CheckStairs
+	call MoveMarioPixelRight
 
-	ret
+	@@Quit:
+		ret
 endp MoveMarioRight
 
 
 proc MarioClimb
 	push ax
-
-	; xor ax, ax
-	; mov al, [ButtonPressed]
-	; call showaxdecimal
 
 	cmp [LastButtonPressed], "U"
 	je @@Up
@@ -392,6 +396,94 @@ proc CheckEndClimb
 		pop ax
 		ret
 endp CheckEndClimb
+
+
+proc CenterMarioOnLadder
+	push ax
+
+	call GetAmountOfLadderColor
+	mov dx, cx
+	call MoveMarioPixelRight
+	call GetAmountOfLadderColor
+	cmp cx, dx
+	jg @@MoveRight
+	jmp @@MoveLeft
+
+	@@MoveRight:
+		cmp cx, 60
+		jg @@Quit
+
+		call MoveMarioPixelRight
+		call GetAmountOfLadderColor
+		jmp @@MoveRight
+
+
+	@@MoveLeft:
+		cmp cx, 60
+		jg @@Quit
+
+		call MoveMarioPixelLeft
+		call GetAmountOfLadderColor
+		jmp @@MoveLeft
+
+
+
+	@@Quit:
+		pop ax
+		ret
+endp CenterMarioOnLadder
+
+
+proc GetAmountOfLadderColor
+	push ax
+	push bx
+	push dx
+	push si
+
+	xor cx, cx
+	xor si, si
+	xor bx, bx
+	@@Column:
+		xor bx, bx
+		@@Row:
+
+		push bx
+		push si
+
+		mov dx, si
+		xor ax, ax
+		mov al, [MarioWidth]
+		mul dl
+		add ax, bx
+		mov si, ax
+
+		mov al, [LastMarioPos + si]
+
+		pop si
+		pop bx
+
+		cmp al, 0
+		je @@NotFoundLadder
+
+		inc cx
+
+		@@NotFoundLadder:
+			inc bx
+			cmp bl, [MarioWidth]
+			jne @@Row
+
+	xor bx, bx
+	mov bl, [MarioHeight]
+	inc si
+	cmp si, bx
+	jne @@Column
+
+	pop si
+	pop dx
+	pop bx
+	pop ax
+	ret
+endp GetAmountOfLadderColor
 
 
 proc CheckIsReadyToClimb

@@ -18,6 +18,7 @@ include "barrels.asm"
 include "keyboard.asm"
 include "timer.asm"
 include "gHelp.asm"
+; include "random.asm"
 ; include "sound.asm"
 
 DATASEG
@@ -31,10 +32,6 @@ start:
 	
 	call InitGraphics
 	call InitButtons
-	; call InitSound
-	; push 47
-	; call GetRollingDownDirection
-	; call showaxdecimal
 
 	push 4
 	call StartTimer
@@ -68,7 +65,8 @@ start:
 		je exit
 
 		jmp MainLoop
-	
+
+
 exitError:
 	; Print Error Message
     mov dx, offset BmpFileErrorMsg

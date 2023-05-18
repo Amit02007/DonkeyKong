@@ -197,15 +197,13 @@ proc UpdateMarioImage
 	
 	cmp [ButtonPressed], "R"
 	je @@Walking
-	
-	; cmp [ButtonPressed], 0
-	; je @@Standing
-
 
 	jmp @@Quit
 
 	@@Standing:
 		cmp [LastButtonPressed], "L"
+		je @@StandingLeft
+		cmp [CurrentMarioImage], "4"
 		je @@StandingLeft
 		
 		cmp [LastButtonPressed], "R"
@@ -268,11 +266,23 @@ proc UpdateMarioImage
 
 
 		@@WalkingAnimation:
+			cmp [MarioTopPointX], 65
+			jne @@CheckRight
+
+			jmp @@Quit
+
+			@@CheckRight:
+				cmp [MarioTopPointX], 249
+				jnge @@CheckTimer
+
+			jmp @@Quit
+
+			@@CheckTimer:
 
 			push 1
 			Call GetTime
 
-			cmp al, 3
+			cmp al, 5
 			jge @@Animation
 			jmp @@Quit
 
