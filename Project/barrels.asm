@@ -61,6 +61,7 @@ proc CreateBarrel
         mov [Barrels + bx + 6], 12          ; Width
         mov [Barrels + bx + 8], 10          ; Height
         mov [Barrels + bx + 10], 120        ; Area
+        mov [Barrels + bx + 12], 0        	; Is Falling
 
 		mov cx, bx
 
@@ -164,12 +165,35 @@ proc InitBarrel
 	push dx
 	push si
 
-	push 2
-	call StartTimer
-	push 3
-	call StartTimer
-	push 4
-	call StartTimer
+	xor bx, bx
+    @@FindMovingBarrel:
+        cmp [word ptr Barrels + bx], 0
+        jne @@Found
+
+        add bx, NEXT_BARREL
+        cmp bx, [BarrelsLenght]
+        jb @@FindMovingBarrel
+
+    jmp @@StartTimers
+	
+    @@Found:
+		mov [word ptr Barrels + bx], 0
+
+		add bx, NEXT_BARREL
+        cmp bx, [BarrelsLenght]
+        jnbe @@StartTimers
+
+        jmp @@FindMovingBarrel
+
+	@@StartTimers:
+		call CreateBarrel
+
+		push 2
+		call StartTimer
+		push 3
+		call StartTimer
+		push 4
+		call StartTimer
 
 	pop si
 	pop dx
@@ -355,8 +379,8 @@ proc UpdateBarrelImage
 
     @@Found:
 		mov ax, [Barrels + bx + 12]
-		cmp ax, 0
-		jne @@Falling
+		cmp al, 1
+		je @@Falling
 
 		cmp [Barrels + bx + 4], "1"
 		jne @@Replace
@@ -559,8 +583,19 @@ proc MoveBarrels
 			jmp @@NextBarrelInList
 
 			@@ChangeToGravity:
+				mov ax, [Barrels + bx + 2]
 				push bx
 				call BarrelFalling
+				mov cx, [Barrels + bx + 2]
+
+				cmp cx, ax
+				je @@Done
+				jmp @@NextBarrelInList
+
+				@@Done:
+					mov [Barrels + bx + 12], 0
+					jmp @@NextBarrelInList
+
 
 			@@NextBarrelInList:
 				add bx, NEXT_BARREL
@@ -574,7 +609,6 @@ proc MoveBarrels
 			push [Barrels + bx + 2]
 			call GetRollingDownDirection
 		
-
 		cmp ax, "L"
 		je @@Left
 
@@ -1276,8 +1310,6 @@ proc BarrelFalling
 
 
 	@@OnFloor:
-    	mov si, BarrelStartPosition
-		mov [Barrels + si + 12], 0
 		pop si
 		pop dx
 		pop cx
@@ -1286,6 +1318,55 @@ proc BarrelFalling
 		pop bp
 		ret 2
 endp BarrelFalling
+
+
+BarrelStartPosition equ [bp + 4]
+proc CheckBarrelOnFloor
+	push bp
+	mov bp, sp
+	push cx
+	push dx
+	push si
+
+	mov si, BarrelStartPosition
+	
+	mov dx, [Barrels + si + 8]
+
+	mov cx, [Barrels + si + 2]
+	add cx, dx
+
+	push [Barrels + si]
+	push cx
+	call GetPixelColor
+
+	cmp al, [FloorColor]
+	je @@OnFloor
+
+	mov dx, [Barrels + si + 6]
+	dec dx
+
+	mov ax, [Barrels + si]
+	add ax, dx
+	push ax
+	push cx
+	call GetPixelColor
+
+	cmp al, [FloorColor]
+	je @@OnFloor
+
+	mov ax, 1
+	jmp @@Quit
+
+	@@OnFloor:
+		xor ax, ax
+
+	@@Quit:
+		pop si
+		pop dx
+		pop cx
+		pop bp
+		ret 2
+endp CheckBarrelOnFloor
 
 
 proc CloseBarrelBmpFile

@@ -38,7 +38,7 @@ proc InitMario
 	mov [MarioJumpState], 0
 	mov [MarioJumpCounter], 0
 
-	mov [MarioTopPointX], 61
+	mov [MarioTopPointX], 65
 	mov [MarioTopPointY], 170
 
 	; Get first backgound
@@ -121,7 +121,9 @@ proc UpdateMario
 	mov [IsInit], 1
 
 	@@Init:
+		call CheckHit
 		call UpdateMarioImage
+
 		
 		cmp [MarioClimbState], 1
 		jne @@NotClimb

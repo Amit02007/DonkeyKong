@@ -33,6 +33,7 @@ start:
 	call InitGraphics
 	call InitButtons
 
+
 	push 4
 	call StartTimer
 	push 4

@@ -29,9 +29,10 @@ SwitchToGameScreen:
 	call SwitchScreen
 	call UpdateBackgourndImage
 
-	call CreateBarrel
+	call ResetLives
 	
 jmp ButtonOnClickReturn
+
 
 BackFromPause:
 	push ax

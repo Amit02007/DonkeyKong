@@ -62,6 +62,7 @@ DATASEG
 
 CODESEG
 
+
 Image equ [bp + 4]
 proc ChangeMarioImage
 	push bp
@@ -91,6 +92,7 @@ proc ChangeMarioImage
 	pop bp
 	ret 2
 endp ChangeMarioImage
+
 
 Image equ [bp + 4]
 proc ChangeMarioData
