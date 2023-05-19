@@ -29,7 +29,8 @@ SwitchToGameScreen:
 	call SwitchScreen
 	call UpdateBackgourndImage
 
-	call ResetLives
+    call ResetLives
+	call InitGame
 	
 jmp ButtonOnClickReturn
 

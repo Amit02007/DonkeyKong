@@ -45,9 +45,7 @@ start:
 		call UpdateMouse
 		call CheckClickOnButton
 		call DetectKey
-		call UpdateMario
-		call UpdateBarrels
-		call UpdateDk
+		call UpdateGame
 
 		push 4
 		call GetTime

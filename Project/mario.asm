@@ -95,141 +95,117 @@ endp InitMario
 proc UpdateMario
 	push ax
 
-	cmp [CurrentScreen], 1
-	je @@NotRemoveMario
+	call UpdateMarioImage
 
-	; TODO: Change the location of DetectDirection
-	cmp [CurrentScreen], 3
-	je @@Pause
-	jmp @@RemoveMario
+	cmp [MarioClimbState], 1
+	jne @@NotClimb
 
-	@@Pause:
-		cmp [IsInit], 2
-		jne @@Remove
-		jmp @@Quit
+	call MarioClimb
 
-		@@Remove:
-			call CloseMarioBmpFile
-			mov [IsInit], 2
-			jmp @@Quit
+	jmp @@Quit
 
-	@@NotRemoveMario:
+	@@NotClimb:
 
-	cmp [IsInit], 1
-	je @@Init
-	call InitMario
-	mov [IsInit], 1
+	cmp [MarioJumpState], 1
+	je @@Jump
 
-	@@Init:
-		call CheckHit
-		call UpdateMarioImage
+	call CheckOnFloor
+	cmp ax, 0
+	je @@ResumeFalling
 
-		
-		cmp [MarioClimbState], 1
-		jne @@NotClimb
+	; On floor
 
-		call MarioClimb
+	cmp [IsJumping], 1 ; Means that returned from jump to floor
+	je @@ReturnFromJump
 
-		jmp @@Quit
+	cmp [IsJumping], 2 
+	je @@AlreadyReturned
 
-		@@NotClimb:
+	jmp @@JumpingDirectionZero
 
-		cmp [MarioJumpState], 1
-		je @@Jump
-
-		call CheckOnFloor
-		cmp ax, 0
-		je @@ResumeFalling
-
-		; On floor
-
-		cmp [IsJumping], 1 ; Means that returned from jump to floor
-		je @@ReturnFromJump
-
-		cmp [IsJumping], 2 
-		je @@AlreadyReturned
-
+	@@ReturnFromJump:
+		mov [IsJumping], 2
 		jmp @@JumpingDirectionZero
 
-		@@ReturnFromJump:
-			mov [IsJumping], 2
-			jmp @@JumpingDirectionZero
+	@@AlreadyReturned:
+		mov [IsJumping], 0
 
-		@@AlreadyReturned:
-			mov [IsJumping], 0
+	@@JumpingDirectionZero:
+		mov [JumpingDirection], 0
 
-		@@JumpingDirectionZero:
-			mov [JumpingDirection], 0
+	@@ResumeFalling:
+		call MarioFalling
+		jmp @@Resume
 
-		@@ResumeFalling:
-			call MarioFalling
-			jmp @@Resume
+	@@Jump:
+		mov [IsJumping], 1
+		call MarioJump
 
-		@@Jump:
-			mov [IsJumping], 1
-			call MarioJump
+	@@Resume:
 
-		@@Resume:
+	call CheckIsReadyToClimb
+
+	cmp [ButtonPressed], "L"
+	je @@Left
+	cmp [ButtonPressed], "R"
+	je @@Right
+	cmp [ButtonPressed], "S"
+	je @@Up
+	cmp [ButtonPressed], "U"
+	je @@ClimbButton
+	cmp [ButtonPressed], "D"
+	je @@ClimbButton
+
+	jmp @@Quit
+
+	@@Left:
+		call MoveMarioLeft
+		jmp @@Quit
+
+	@@Right:
+		call MoveMarioRight
+		jmp @@Quit
+
+	@@Up:
+		push ax
+
+		; xor ax, ax
+		; mov al, [Score]
+		; call showaxdecimal
+
+		call CheckOnFloor
+		cmp ax, 1
+		jne @@DontJump
+		
+		mov [MarioJumpState], 1
+
+		cmp [LastButtonPressed], "L"
+		je @@JumpingDirectionLeft
+
+		cmp [LastButtonPressed], "R"
+		je @@JumpingDirectionRight
+
+		jmp @@DontJump
+
+		@@JumpingDirectionLeft:
+			mov [JumpingDirection], "L"
+			jmp @@DontJump
+
+		@@JumpingDirectionRight:
+			mov [JumpingDirection], "R"
+
+		@@DontJump:
+			pop ax
+			jmp @@Quit
+
+	@@ClimbButton:
 
 		call CheckIsReadyToClimb
 
-		cmp [ButtonPressed], "L"
-		je @@Left
-		cmp [ButtonPressed], "R"
-		je @@Right
-		cmp [ButtonPressed], "S"
-		je @@Up
-		cmp [ButtonPressed], "U"
-		je @@ClimbButton
-		cmp [ButtonPressed], "D"
-		je @@ClimbButton
+		cmp [IsReadyToClimb], 0
+		je @@Quit
 
-		jmp @@Quit
-
-		@@Left:
-			call MoveMarioLeft
-			jmp @@Quit
-
-		@@Right:
-			call MoveMarioRight
-			jmp @@Quit
-
-		@@Up:
-			push ax
-
-			call CheckOnFloor
-			cmp ax, 1
-			jne @@DontJump
-			
-			mov [MarioJumpState], 1
-
-			cmp [LastButtonPressed], "L"
-			je @@JumpingDirectionLeft
-
-			cmp [LastButtonPressed], "R"
-			je @@JumpingDirectionRight
-
-			jmp @@DontJump
-
-			@@JumpingDirectionLeft:
-				mov [JumpingDirection], "L"
-				jmp @@DontJump
-
-			@@JumpingDirectionRight:
-				mov [JumpingDirection], "R"
-
-			@@DontJump:
-				pop ax
-				jmp @@Quit
-
-		@@ClimbButton:
-
-			call CheckIsReadyToClimb
-
-			cmp [IsReadyToClimb], 0
-			je @@Quit
-
-			mov [MarioClimbState], 1
+		mov [MarioClimbState], 1
 
 
 	jmp @@Quit
@@ -681,7 +657,9 @@ proc MarioJump near
 	mov ax, [Clock]
 
 	cmp ax, [LastJump]
-	je @@OnAir
+	jne @@Resume
+	jmp @@OnAir
+	@@Resume:
 	mov [LastJump], ax
 
 	cmp [MarioJumpCounter], 10
@@ -690,11 +668,69 @@ proc MarioJump near
 	call MoveMarioPixelUp
 	call MoveMarioPixelUp
 	inc [MarioJumpCounter]
+	cmp [IsAddedScore], 1
+	jne @@NotAddedScore
 	jmp @@OnAir
 
 	@@StopJump:
+		mov [IsAddedScore], 0
 		mov [MarioJumpState], 0
 		mov [MarioJumpCounter], 0
+		jmp @@OnAir
+
+
+	@@NotAddedScore:
+
+	xor bx, bx
+    @@FindMovingBarrel:
+        cmp [word ptr Barrels + bx], 0
+        jne @@Found
+
+        add bx, NEXT_BARREL
+        cmp bx, [BarrelsLenght]
+        jb @@FindMovingBarrel
+
+    jmp @@OnAir
+	
+    @@Found:
+        xor cx, cx
+
+        mov ax, [Barrels + bx]
+        cmp ax, [MarioTopPointX]
+        jnae @@NextBarrelInList
+
+        mov ax, [Barrels + bx]
+        mov cx, [MarioTopPointX]
+        add cl, [MarioWidth]
+        dec cx
+        cmp ax, cx
+        ja @@NextBarrelInList
+
+        mov ax, [Barrels + bx + 2]
+		sub ax, 15
+        cmp ax, [MarioTopPointY]
+        jb @@NextBarrelInList
+
+        mov ax, [Barrels + bx + 2]
+		sub ax, 15
+        mov cx, [MarioTopPointY]
+        add cl, [MarioHeight]
+        dec cx
+        cmp ax, cx
+        jnbe @@NextBarrelInList
+
+		call AddScore
+		mov [IsAddedScore], 1
+		
+		jmp @@OnAir
+
+		@@NextBarrelInList:
+			add bx, NEXT_BARREL
+			cmp bx, [BarrelsLenght]
+			jnbe @@OnAir
+
+			jmp @@FindMovingBarrel
+
 
 	@@OnAir:
 		pop es

@@ -205,32 +205,32 @@ endp InitBarrel
 
 proc UpdateBarrels
 
-	cmp [CurrentScreen], 1
-	je @@NotRemoveBarrel
+	; cmp [CurrentScreen], 1
+	; je @@NotRemoveBarrel
 
-	; TODO: Change the location of DetectDirection
-	cmp [CurrentScreen], 3
-	je @@Pause
-	jmp @@RemoveBarrel
+	; ; TODO: Change the location of DetectDirection
+	; cmp [CurrentScreen], 3
+	; je @@Pause
+	; jmp @@RemoveBarrel
 
-	@@Pause:
-		cmp [IsBarrelInit], 2
-		jne @@Remove
-		jmp @@Quit
+	; @@Pause:
+	; 	cmp [IsBarrelInit], 2
+	; 	jne @@Remove
+	; 	jmp @@Quit
 
-		@@Remove:
-			call CloseBarrelBmpFile
-			mov [IsBarrelInit], 2
-			jmp @@Quit
+	; 	@@Remove:
+	; 		call CloseBarrelBmpFile
+	; 		mov [IsBarrelInit], 2
+	; 		jmp @@Quit
 
-	@@NotRemoveBarrel:
+	; @@NotRemoveBarrel:
 
-	cmp [IsBarrelInit], 1
-	je @@Init
-	call InitBarrel
-	mov [IsBarrelInit], 1
+	; cmp [IsBarrelInit], 1
+	; je @@Init
+	; call InitBarrel
+	; mov [IsBarrelInit], 1
 
-	@@Init:
+	; @@Init:
 		call UpdateBarrelImage
 		
 		call MoveBarrels

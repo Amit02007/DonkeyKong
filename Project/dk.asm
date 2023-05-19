@@ -92,32 +92,32 @@ endp InitDk
 
 proc UpdateDk
 
-	cmp [CurrentScreen], 1
-	je @@NotRemoveDk
+	; cmp [CurrentScreen], 1
+	; je @@NotRemoveDk
 
-	; TODO: Change the location of DetectDirection
-	cmp [CurrentScreen], 3
-	je @@Pause
-	jmp @@RemoveDk
+	; ; TODO: Change the location of DetectDirection
+	; cmp [CurrentScreen], 3
+	; je @@Pause
+	; jmp @@RemoveDk
 
-	@@Pause:
-		cmp [IsDkInit], 2
-		jne @@Remove
-		jmp @@Quit
+	; @@Pause:
+	; 	cmp [IsDkInit], 2
+	; 	jne @@Remove
+	; 	jmp @@Quit
 
-		@@Remove:
-			call CloseDkBmpFile
-			mov [IsDkInit], 2
-			jmp @@Quit
+	; 	@@Remove:
+	; 		call CloseDkBmpFile
+	; 		mov [IsDkInit], 2
+	; 		jmp @@Quit
 
-	@@NotRemoveDk:
+	; @@NotRemoveDk:
 
-	cmp [IsDkInit], 1
-	je @@Init
-	call InitDk
-	mov [IsDkInit], 1
+	; cmp [IsDkInit], 1
+	; je @@Init
+	; call InitDk
+	; mov [IsDkInit], 1
 
-	@@Init:
+	; @@Init:
 		call UpdateDkImage
 
 		

@@ -13,6 +13,9 @@ DATASEG
 	LivesFileHandle	dw ?
 	LivesHeader db 54 dup(0)
 
+    Score db 0, 0, 0, "0", "0", "0", "$"
+    IsAddedScore db 0
+
     OffsetToReturn dw ?
     SavedAx dw ?
     SavedCx dw ?
@@ -47,6 +50,107 @@ proc Return
     jmp [OffsetToReturn]
 
 endp Return
+
+
+proc InitGame
+
+    call InitMario
+    call InitDk
+    call InitBarrel
+    call ResetScore
+
+    ret
+endp InitGame
+
+
+proc UpdateGame
+
+    cmp [CurrentScreen], 1
+    jne @@Quit
+
+    call CheckHit
+    call UpdateMario
+    call UpdateDk
+    call UpdateBarrels
+
+    @@Quit:
+        ret
+endp UpdateGame
+
+
+proc ResetScore
+
+    mov [Score], 0
+    mov [Score + 1], 0
+    mov [Score + 2], 0
+    mov [Score + 3], "0"
+    mov [Score + 4], "0"
+    mov [Score + 5], "0"
+
+    mov ah, 2
+    mov bh, 0
+    push 3
+    push 1
+    call ConvertMatrixPos
+    mov dx, di
+    int 10h
+
+    mov ah, 9
+    lea dx, Score
+    int 21h
+
+    ret
+endp ResetScore
+
+
+proc AddScore
+    push ax
+    push bx
+    push cx
+    push dx
+    push di
+
+    mov bx, 3
+
+    @@AddTheScore:
+        cmp [Score + bx], "9"
+        je @@ReachToNine
+
+        cmp [Score + bx], 0
+        jne @@Inc
+        mov [Score + bx], "1"
+        jmp @@PutOnScreen
+
+        @@Inc:
+            inc [Score + bx] 
+            jmp @@PutOnScreen
+
+        @@ReachToNine:
+            mov [Score + bx], "0"
+            dec bx
+            jmp @@AddTheScore
+
+
+    @@PutOnScreen:
+        mov ah, 2
+        mov bh, 0
+        push 3
+        push 1
+        call ConvertMatrixPos
+        mov dx, di
+        int 10h
+
+        mov ah, 9
+        lea dx, Score
+        int 21h
+
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp AddScore
 
 
 proc ResetLives
@@ -213,22 +317,14 @@ proc CheckHit
             jnbe @@NextBarrelInList
         
         @@Hit:
-            @@RemoveMario:
-                mov [IsInit], 0
-                call CloseMarioBmpFile
+            mov [SelectedScreen], 1
+            call SwitchScreen
+            call UpdateBackgourndImage
 
-            @@RemoveBarrel:
-                mov [IsBarrelInit], 0
-                call CloseBarrelBmpFile
+            call InitGame
+            call RemoveLives
 
-            @@UpdateBackgound:
-                mov [SelectedScreen], 1
-                call SwitchScreen
-                call UpdateBackgourndImage
-
-                call RemoveLives
-
-                jmp @@Quit
+            jmp @@Quit
 
 
     @@NextBarrelInList:
