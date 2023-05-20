@@ -3,7 +3,7 @@ IDEAL
 MODEL small
 STACK 150h
 
-MAX_BARRELS_ON_SCREEN = 4
+MAX_BARRELS_ON_SCREEN = 8
 MAX_BARRELS_WIDTH = 16
 MAX_BARRELS_HEIGHT = 10
 
@@ -58,9 +58,9 @@ proc CreateBarrel
         mov [Barrels + bx], 124             ; X point
         mov [Barrels + bx + 2], 36          ; Y point
         mov [Barrels + bx + 4], "1"         ; Image
-        mov [Barrels + bx + 6], 12          ; Width
-        mov [Barrels + bx + 8], 10          ; Height
-        mov [Barrels + bx + 10], 120        ; Area
+        mov [Barrels + bx + 6], 10          ; Width
+        mov [Barrels + bx + 8], 8          ; Height
+        mov [Barrels + bx + 10], 80        ; Area
         mov [Barrels + bx + 12], 0        	; Is Falling
 
 		mov cx, bx
@@ -82,7 +82,7 @@ proc CreateBarrel
 				push si
 				push ax
 				mov dx, si
-				mov al, 12
+				mov al, 10
 				mul dl
 				add ax, bx
 				mov si, ax
@@ -95,10 +95,10 @@ proc CreateBarrel
 				pop bx
 				pop si
 				inc bx
-				cmp bx, 12
+				cmp bx, 10
 				jne @@Row
 
-			mov bx, 10
+			mov bx, 8
 			inc si
 			cmp si, bx
 			jne @@Column
@@ -186,13 +186,11 @@ proc InitBarrel
         jmp @@FindMovingBarrel
 
 	@@StartTimers:
-		call CreateBarrel
+		; call CreateBarrel
 
 		push 2
 		call StartTimer
 		push 3
-		call StartTimer
-		push 4
 		call StartTimer
 
 	pop si
@@ -205,45 +203,11 @@ endp InitBarrel
 
 proc UpdateBarrels
 
-	; cmp [CurrentScreen], 1
-	; je @@NotRemoveBarrel
+	call UpdateBarrelImage
+	
+	call MoveBarrels
 
-	; ; TODO: Change the location of DetectDirection
-	; cmp [CurrentScreen], 3
-	; je @@Pause
-	; jmp @@RemoveBarrel
-
-	; @@Pause:
-	; 	cmp [IsBarrelInit], 2
-	; 	jne @@Remove
-	; 	jmp @@Quit
-
-	; 	@@Remove:
-	; 		call CloseBarrelBmpFile
-	; 		mov [IsBarrelInit], 2
-	; 		jmp @@Quit
-
-	; @@NotRemoveBarrel:
-
-	; cmp [IsBarrelInit], 1
-	; je @@Init
-	; call InitBarrel
-	; mov [IsBarrelInit], 1
-
-	; @@Init:
-		call UpdateBarrelImage
-		
-		call MoveBarrels
-
-
-	jmp @@Quit
-
-	@@RemoveBarrel:
-		mov [IsBarrelInit], 0
-		call CloseBarrelBmpFile
-
-	@@Quit:
-		ret
+	ret
 endp UpdateBarrels
 
 
@@ -312,16 +276,16 @@ proc ChangeBarrelData
 	jmp @@Quit
 
 	@@RollingSide:
-		mov [Barrels + bx + 6], 12
-        mov [Barrels + bx + 8], 10
-        mov [Barrels + bx + 10], 120
+		mov [Barrels + bx + 6], 10
+        mov [Barrels + bx + 8], 8
+        mov [Barrels + bx + 10], 80
 
 		jmp @@Quit
 
 	@@RollingDown:
-		mov [Barrels + bx + 6], 15
-        mov [Barrels + bx + 8], 10
-        mov [Barrels + bx + 10], 150
+		mov [Barrels + bx + 6], 13
+        mov [Barrels + bx + 8], 9
+        mov [Barrels + bx + 10], 117
 
 		jmp @@Quit
 
@@ -459,29 +423,6 @@ proc UpdateBarrelImage
 
 
 		@@Quit:
-			mov ax, [LastBarrelImage]
-			cmp [CurrentBarrelImage], ax
-			je @@Resume
-
-		; cmp [LastBarrelImage], "5"
-		; je @@ShowBarrel
-
-		; cmp [LastBarrelImage], "6"
-		; je @@ShowBarrel
-		
-		; cmp [LastBarrelImage], "7"
-		; je @@ShowBarrel
-		
-		; cmp [LastBarrelImage], "8"
-		; je @@ShowBarrel
-		
-		; jmp @@Resume
-
-		; @@ShowBarrel:
-		; 	push [CurrentBarrelImage]
-		; 	call ChangeBarrelImage
-
-		@@Resume:
 			pop dx
 			pop cx
 			pop bx
@@ -553,18 +494,24 @@ proc MoveBarrels
 
 
 		; Random Boolean
-		mov cx, bx
-		mov ax, [Barrels + bx + 10]
-		add al, [MarioMatrix + bx]
-		sub al, [BarrelMatrix + bx + 1]
-		add ax, [Barrels + bx + 2]
-		xor ax, [Barrels]
-		sub ax, [Barrels + 16]
-		xor ax, [Barrels + 32]
-		xor ah, ah
-		and al, 00000001b
+
+		; mov cx, bx
+		; mov ax, [Barrels + bx + 10]
+		; add al, [MarioMatrix + bx]
+		; sub al, [BarrelMatrix + bx + 1]
+		; add ax, [Barrels + bx + 2]
+		; xor ax, [Barrels]
+		; sub ax, [Barrels + 16]
+		; xor ax, [Barrels + 32]
+		; xor ah, ah
+		; and al, 00000001b
+		push bx
+		mov bl, 1
+		mov bh, 3	 
+		call RandomByCs
+		pop bx
 		cmp al, 1
-		je @@CheckDirection
+		jne @@CheckDirection
 
 		; Activate Falling
 		mov ax, [Barrels + bx + 12]

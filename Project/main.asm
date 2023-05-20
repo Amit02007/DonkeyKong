@@ -18,7 +18,7 @@ include "barrels.asm"
 include "keyboard.asm"
 include "timer.asm"
 include "gHelp.asm"
-; include "random.asm"
+include "random.asm"
 ; include "sound.asm"
 
 DATASEG
@@ -34,11 +34,6 @@ start:
 	call InitButtons
 
 
-	push 4
-	call StartTimer
-	push 4
-	call StopTimer
-
 	MainLoop:
 		; call PlayMusic
 		call UpdateTime
@@ -46,19 +41,6 @@ start:
 		call CheckClickOnButton
 		call DetectKey
 		call UpdateGame
-
-		push 4
-		call GetTime
-		cmp al, 0F0h
-		jne @@NotB
-		call CreateBarrel
-
-		push 4
-		call StopTimer
-		push 4
-		call ResetTimer
-
-		@@NotB:
 
 		cmp [IsRightButtonPressed], 1
 		je exit

@@ -16,6 +16,8 @@ DATASEG
     Score db 0, 0, 0, "0", "0", "0", "$"
     IsAddedScore db 0
 
+    NextBarrelTime db 90
+
     OffsetToReturn dw ?
     SavedAx dw ?
     SavedCx dw ?
@@ -58,9 +60,52 @@ proc InitGame
     call InitDk
     call InitBarrel
     call ResetScore
+    call CreateBarrel
+
+    push 4
+    call StartTimer
 
     ret
 endp InitGame
+
+
+proc ResetGame
+    push ax
+    push bx
+    push dx
+    push di
+
+    call InitMario
+    call InitDk
+    call InitBarrel
+    call CreateBarrel
+
+    push 4
+    call StopTimer
+    push 4
+    call ResetTimer
+    push 4
+    call StartTimer
+
+    @@PutScoreOnScreen:
+        mov ah, 2
+        mov bh, 0
+        push 3
+        push 1
+        call ConvertMatrixPos
+        mov dx, di
+        int 10h
+
+        mov ah, 9
+        lea dx, [Score]
+        int 21h
+
+    pop di
+    pop dx
+    pop bx
+    pop ax
+    ret
+endp ResetGame
 
 
 proc UpdateGame
@@ -72,6 +117,8 @@ proc UpdateGame
     call UpdateMario
     call UpdateDk
     call UpdateBarrels
+
+    call DropBarrel
 
     @@Quit:
         ret
@@ -96,7 +143,7 @@ proc ResetScore
     int 10h
 
     mov ah, 9
-    lea dx, Score
+    lea dx, [Score]
     int 21h
 
     ret
@@ -141,7 +188,7 @@ proc AddScore
         int 10h
 
         mov ah, 9
-        lea dx, Score
+        lea dx, [Score]
         int 21h
 
     pop di
@@ -321,7 +368,7 @@ proc CheckHit
             call SwitchScreen
             call UpdateBackgourndImage
 
-            call InitGame
+            call ResetGame
             call RemoveLives
 
             jmp @@Quit
@@ -343,6 +390,39 @@ proc CheckHit
 		pop ax
 		ret
 endp CheckHit
+
+
+proc DropBarrel
+    push ax
+    push bx
+
+    push 4
+    call GetTime
+    
+    cmp al, 200
+    jb @@Quit
+
+    push 4
+    call StopTimer
+    push 4
+    call ResetTimer
+    push 4
+    call StartTimer
+
+    ; mov bl, 100
+    ; mov bh, 200
+    ; call RandomByCs
+
+    ; mov [NextBarrelTime], al
+
+    call CreateBarrel
+
+
+    @@Quit:
+        pop bx
+        pop ax
+        ret
+endp DropBarrel
 
 
 yPoint equ [bp + 4] 

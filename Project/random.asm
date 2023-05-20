@@ -2,22 +2,38 @@ IDEAL
 p286
 
 
-MACRO RND
-    mov ax, 40h
-    mov es, ax
-    mov ax, [es:6Ch]
-    and ax, 7
-ENDM
-
-
 MODEL small
 STACK 100h
 
 DATASEG
 	
-	
+	 RndCurrentPos dw start
+
 		
 CODESEG
+    
+	
+	; put some data in Code segment in order to have enough bytes to xor with 
+	SomeRNDData	    db 227	,111	,105	,1		,127
+					db 234	,6		,116	,101	,220
+					db 92	,60		,21		,228	,22
+					db 222	,63		,216	,208	,146
+					db 60	,172	,60		,80		,30
+					db 23	,85		,67		,157	,131
+					db 120	,111	,105	,49		,107
+					db 148	,15		,141	,32		,225
+					db 113	,163	,174	,23		,19
+					db 143	,28		,234	,56		,74
+					db 223	,88		,214	,122	,138
+					db 100	,214	,161	,41		,230
+					db 8	,93		,125	,132	,129
+					db 175	,235	,228	,6		,226
+					db 202	,223	,2		,6		,143
+					db 8	,147	,214	,39		,88
+					db 130	,253	,106	,153	,147
+					db 73	,140	,251	,32		,59
+					db 92	,224	,138	,118	,200
+					db 244	,4		,45		,181	,62
 					
 
 
@@ -223,3 +239,78 @@ RndAgain:
 	
 	ret
 endp RndBlToBh
+
+
+
+	 
+proc printAxDec  
+	   
+       push bx
+	   push dx
+	   push cx
+	           	   
+       mov cx,0   ; will count how many time we did push 
+       mov bx,10  ; the divider
+   
+put_next_to_stack:
+       xor dx,dx
+       div bx
+       add dl,30h
+	   ; dl is the current LSB digit 
+	   ; we cant push only dl so we push all dx
+       push dx    
+       inc cx
+       cmp ax,9   ; check if it is the last time to div
+       jg put_next_to_stack
+
+	   cmp ax,0
+	   jz pop_next_from_stack  ; jump if ax was totally 0
+       add al,30h  
+	   mov dl, al    
+  	   mov ah, 2h
+	   int 21h        ; show first digit MSB
+	       
+pop_next_from_stack: 
+       pop ax    ; remove all rest LIFO (reverse) (MSB to LSB)
+	   mov dl, al
+       mov ah, 2h
+	   int 21h        ; show all rest digits
+       loop pop_next_from_stack
+
+	   pop cx
+	   pop dx
+	   pop bx
+	   
+       ret
+endp printAxDec    
+
+
+proc sleep_ms
+delay_in_ms equ [bp+4]
+	push bp
+	mov bp, sp
+    push ax
+    push cx
+    push dx
+
+    mov ax, 1025
+    mov cx, delay_in_ms
+    mul cx
+    mov cx, dx
+    mov dx, ax
+    mov ah, 86h
+    int 15h
+	
+	pop dx
+	pop cx	
+	pop ax	
+
+	pop bp
+    ret	2
+endp sleep_ms
+
+
+
+
+
+EndOfCsLbl:
