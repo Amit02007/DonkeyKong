@@ -24,8 +24,7 @@ DATASEG
 	; DkClimbState db 0
 	; LastClimb dw 0
 
-	IsDkInit db 0
-
+	IsDroppingBarrel db 0
 
 CODESEG
 
@@ -79,8 +78,8 @@ proc InitDk
 	push "1"
 	call ChangeDkImage
 
-	; push 1
-	; call StartTimer
+	push 5
+	call StartTimer
 
 	pop si
 	pop dx
@@ -91,151 +90,93 @@ endp InitDk
 
 
 proc UpdateDk
-
-	; cmp [CurrentScreen], 1
-	; je @@NotRemoveDk
-
-	; ; TODO: Change the location of DetectDirection
-	; cmp [CurrentScreen], 3
-	; je @@Pause
-	; jmp @@RemoveDk
-
-	; @@Pause:
-	; 	cmp [IsDkInit], 2
-	; 	jne @@Remove
-	; 	jmp @@Quit
-
-	; 	@@Remove:
-	; 		call CloseDkBmpFile
-	; 		mov [IsDkInit], 2
-	; 		jmp @@Quit
-
-	; @@NotRemoveDk:
-
-	; cmp [IsDkInit], 1
-	; je @@Init
-	; call InitDk
-	; mov [IsDkInit], 1
-
-	; @@Init:
-		call UpdateDkImage
-
-		
-		; cmp [DkClimbState], 1
-		; jne @@NotClimb
-
-		; call DkClimb
-
-		; jmp @@Quit
-
-		; @@NotClimb:
-
-		; cmp [DkJumpState], 1
-		; je @@Jump
-
-		; call CheckOnFloor
-		; cmp ax, 0
-		; je @@ResumeFalling
-
-		; ; On floor
-
-		; cmp [IsJumping], 1 ; Means that returned from jump to floor
-		; je @@ReturnFromJump
-
-		; cmp [IsJumping], 2 
-		; je @@AlreadyReturned
-
-		; jmp @@JumpingDirectionZero
-
-		; @@ReturnFromJump:
-		; 	mov [IsJumping], 2
-		; 	jmp @@JumpingDirectionZero
-
-		; @@AlreadyReturned:
-		; 	mov [IsJumping], 0
-
-		; @@JumpingDirectionZero:
-		; 	mov [JumpingDirection], 0
-
-		; @@ResumeFalling:
-		; 	call DkFalling
-		; 	jmp @@Resume
-
-		; @@Jump:
-		; 	mov [IsJumping], 1
-		; 	call DkJump
-
-		; @@Resume:
-
-		; call CheckIsReadyToClimb
-
-		; cmp [ButtonPressed], "L"
-		; je @@Left
-		; cmp [ButtonPressed], "R"
-		; je @@Right
-		; cmp [ButtonPressed], "S"
-		; je @@Up
-		; cmp [ButtonPressed], "U"
-		; je @@ClimbButton
-		; cmp [ButtonPressed], "D"
-		; je @@ClimbButton
-
-		; jmp @@Quit
-
-		; @@Left:
-		; 	call MoveDkLeft
-		; 	jmp @@Quit
-
-		; @@Right:
-		; 	call MoveDkRight
-		; 	jmp @@Quit
-
-		; @@Up:
-		; 	push ax
-
-		; 	call CheckOnFloor
-		; 	cmp ax, 1
-		; 	jne @@DontJump
-			
-		; 	mov [DkJumpState], 1
-
-		; 	cmp [LastButtonPressed], "L"
-		; 	je @@JumpingDirectionLeft
-
-		; 	cmp [LastButtonPressed], "R"
-		; 	je @@JumpingDirectionRight
-
-		; 	jmp @@DontJump
-
-		; 	@@JumpingDirectionLeft:
-		; 		mov [JumpingDirection], "L"
-		; 		jmp @@DontJump
-
-		; 	@@JumpingDirectionRight:
-		; 		mov [JumpingDirection], "R"
-
-		; 	@@DontJump:
-		; 		pop ax
-
-		; @@ClimbButton:
-
-		; 	call CheckIsReadyToClimb
-
-		; 	cmp [IsReadyToClimb], 0
-		; 	je @@Quit
-
-		; 	mov [DkClimbState], 1
-
-
-	jmp @@Quit
-
-	@@RemoveDk:
-		mov [IsDkInit], 0
-		call CloseDkBmpFile
+	
+    call DkDropBarrel
 
 	@@Quit:
 		ret
 endp UpdateDk
+
+
+proc DkDropBarrel
+	push ax
+
+	cmp [IsDroppingBarrel], 0
+	jne @@CheckTime
+	jmp @@Quit
+
+
+	@@CheckTime:
+		push 5
+		Call GetTime
+
+		cmp [IsReadyToClimb], 1
+		je @@Slower
+
+		cmp [MarioClimbState], 1
+		jne @@NotJumping
+
+		@@Climb:
+			cmp al, 20
+			jnb @@Resume
+			jmp @@Quit
+
+
+		@@Slower:
+			cmp al, 14
+			jnb @@Resume
+			jmp @@Quit
+
+		@@NotJumping:
+			cmp al, 8
+			jnb @@Resume
+			jmp @@Quit
+
+		@@Resume:
+			push 5
+			call StopTimer
+			push 5
+			call ResetTimer
+			push 5
+			call StartTimer
+
+
+	; push 5
+	; call GetTime
+
+	; cmp al, 8
+	; jb @@Quit
+
+	; push 5
+    ; call StopTimer
+    ; push 5
+    ; call ResetTimer
+    ; push 5
+    ; call StartTimer
+
+	cmp [CurrentDkImage], "4"
+	jne @@IncImage
+
+	mov [CurrentDkImage], "1"
+	call RefreshDk
+	push [CurrentDkImage]
+	call ChangeDkImage
+	mov [IsDroppingBarrel], 0
+    call CreateBarrel
+	jmp @@Quit
+
+
+	@@IncImage:
+		inc [CurrentDkImage]
+		call RefreshDk
+		push [CurrentDkImage]
+		call ChangeDkImage
+
+
+	@@Quit:
+		pop ax
+		ret
+endp DkDropBarrel
 
 
 ; proc MoveDkLeft

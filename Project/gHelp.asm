@@ -60,7 +60,7 @@ proc InitGame
     call InitDk
     call InitBarrel
     call ResetScore
-    call CreateBarrel
+    call DkDropBarrel
 
     push 4
     call StartTimer
@@ -78,7 +78,7 @@ proc ResetGame
     call InitMario
     call InitDk
     call InitBarrel
-    call CreateBarrel
+    call DkDropBarrel
 
     push 4
     call StopTimer
@@ -396,26 +396,55 @@ proc DropBarrel
     push ax
     push bx
 
+
     push 4
-    call GetTime
+    Call GetTime
+
+    cmp [IsReadyToClimb], 1
+    je @@Slower
+
+    cmp [MarioClimbState], 1
+    jne @@NotJumping
+
+    @@Climb:
+        cmp al, 0FFh
+        jnb @@Resume
+        jmp @@Quit
+
+
+    @@Slower:
+        cmp al, 240
+        jnb @@Resume
+        jmp @@Quit
+
+    @@NotJumping:
+        cmp al, 200
+        jnb @@Resume
+        jmp @@Quit
+
+    @@Resume:
+        push 4
+        call StopTimer
+        push 4
+        call ResetTimer
+        push 4
+        call StartTimer
+
+    ; push 4
+    ; call GetTime
     
-    cmp al, 200
-    jb @@Quit
+    ; cmp al, 200
+    ; jb @@Quit
 
-    push 4
-    call StopTimer
-    push 4
-    call ResetTimer
-    push 4
-    call StartTimer
+    ; push 4
+    ; call StopTimer
+    ; push 4
+    ; call ResetTimer
+    ; push 4
+    ; call StartTimer
 
-    ; mov bl, 100
-    ; mov bh, 200
-    ; call RandomByCs
-
-    ; mov [NextBarrelTime], al
-
-    call CreateBarrel
+    
+    mov [IsDroppingBarrel], 1
 
 
     @@Quit:

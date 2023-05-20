@@ -78,6 +78,7 @@ proc InitMario
 	cmp si, bx
 	jne @@Column
 
+	call RefreshMario
 	push "1"
 	call ChangeMarioImage
 
@@ -168,10 +169,6 @@ proc UpdateMario
 
 	@@Up:
 		push ax
-
-		; xor ax, ax
-		; mov al, [Score]
-		; call showaxdecimal
 
 		call CheckOnFloor
 		cmp ax, 1

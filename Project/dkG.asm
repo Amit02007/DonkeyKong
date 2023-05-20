@@ -16,71 +16,71 @@ DATASEG
 	; 8 -> Climbing Left
 	DkFileName db "dk1.bmp", 0
 
-	LastDkPos 		db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
+	LastDkPos 		db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
 
-	DkMatrix 		db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
-					db 40 dup (0)
+	DkMatrix 		db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
+					db 43 dup (0)
  
 	DkFileHandle	dw ?
 	DkHeader db 120 dup(0)
@@ -91,6 +91,12 @@ DATASEG
 	DkWidth db 40
 	DkHeight db 32
 	DkArea dw 1280
+
+	; DkWidth db 43
+	; DkHeight db 32
+	; DkArea dw 1376
+
+	CurrentDkImageAnimation dw "1"
 
 	; IsWalking db 1
 
@@ -141,14 +147,14 @@ proc ChangeDkData
 	cmp ax, "1"
 	je @@Standing
 
-	; cmp ax, "2"
-	; je @@Standing
+	cmp ax, "2"
+	je @@Side
 
-	; cmp ax, "3"
-	; je @@Walking
+	cmp ax, "3"
+	je @@Standing
 
-	; cmp ax, "4"
-	; je @@Walking
+	cmp ax, "4"
+	je @@Side
 	
 	; cmp ax, "5"
 	; je @@Jumping
@@ -171,10 +177,10 @@ proc ChangeDkData
 
 		jmp @@Quit
 
-	@@Walking:
-		mov [DkWidth], 15
-		mov	[DkHeight], 16
-		mov	[DkArea], 240
+	@@Side:
+		mov [DkWidth], 43
+		mov	[DkHeight], 32
+		mov	[DkArea], 1376
 
 		jmp @@Quit
 	
@@ -262,9 +268,10 @@ proc UpdateDkImage
 	; 		mov [CurrentDkImage], "2"
 	; 		jmp @@Quit
 
-		@@StandingRight:
-			mov [CurrentDkImage], "1"
-			jmp @@Quit
+		; @@StandingRight:
+		; 	mov [CurrentDkImage], "1"
+		; 	jmp @@Quit
+		;-------------------------------------------------------------------------------------
 
 
 	; @@Jumping:
@@ -566,7 +573,6 @@ proc RemoveDkBackground
 	pop ax
 	ret
 endp RemoveDkBackground
-
 
 proc MoveDkPixelLeft
 	push ax
