@@ -6,14 +6,10 @@ STACK 90
 
 DATASEG
 
-	; 1 -> Standing Right
+	; 1 -> Standing Forward
 	; 2 -> Standing Left
-	; 3 -> Walking Right
-	; 4 -> Walking Left
-	; 5 -> Jumping Rihgt
-	; 6 -> Jumping Left
-	; 7 -> Climbing Right
-	; 8 -> Climbing Left
+	; 3 -> Standing Forward With Barrel
+	; 4 -> Standing Right
 	DkFileName db "dk1.bmp", 0
 
 	LastDkPos 		db 43 dup (0)
@@ -155,18 +151,6 @@ proc ChangeDkData
 
 	cmp ax, "4"
 	je @@Side
-	
-	; cmp ax, "5"
-	; je @@Jumping
-	
-	; cmp ax, "6"
-	; je @@Jumping
-	
-	; cmp ax, "7"
-	; je @@Climbing
-	
-	; cmp ax, "8"
-	; je @@Climbing
 
 	jmp @@Quit
 
@@ -181,20 +165,6 @@ proc ChangeDkData
 		mov [DkWidth], 43
 		mov	[DkHeight], 32
 		mov	[DkArea], 1376
-
-		jmp @@Quit
-	
-	@@Jumping:
-		mov [DkWidth], 16
-		mov	[DkHeight], 16
-		mov	[DkArea], 256
-
-		jmp @@Quit
-	
-	@@Climbing:
-		mov [DkWidth], 13
-		mov	[DkHeight], 16
-		mov	[DkArea], 208
 
 		jmp @@Quit
 
@@ -219,176 +189,6 @@ proc UpdateDkImage
 	mov ax, [CurrentDkImage]
 	mov [LastDkImage], ax
 
-	
-
-
-	; cmp [IsJumping], 1
-	; je @@Jumping
-	
-	; cmp [IsJumping], 2
-	; je @@ReturnFromJump
-	
-	; cmp [DkClimbState], 1
-	; jne @@NotUp
-	; jmp @@Climbing
-
-	; @@NotUp:
-
-	; cmp [ButtonPressed], "L"
-	; je @@Walking
-	
-	; cmp [ButtonPressed], "R"
-	; je @@Walking
-	
-	; ; cmp [ButtonPressed], 0
-	; ; je @@Standing
-
-
-	; jmp @@Quit
-
-	; @@Standing:
-	; 	cmp [LastButtonPressed], "L"
-	; 	je @@StandingLeft
-		
-	; 	cmp [LastButtonPressed], "R"
-	; 	je @@StandingRight
-		
-	; 	jmp @@Quit
-
-	; 	@@ReturnFromJump:
-	; 		cmp [CurrentDkImage], "6"
-	; 		je @@StandingLeft
-			
-	; 		cmp [CurrentDkImage], "5"
-	; 		je @@StandingRight
-
-	; 		jmp @@Quit
-
-	; 	@@StandingLeft:
-	; 		mov [CurrentDkImage], "2"
-	; 		jmp @@Quit
-
-		; @@StandingRight:
-		; 	mov [CurrentDkImage], "1"
-		; 	jmp @@Quit
-		;-------------------------------------------------------------------------------------
-
-
-	; @@Jumping:
-	; 	mov ax, [CurrentDkImage]
-
-	; 	cmp ax, "2"
-	; 	je @@JumpingLeft
-		
-	; 	cmp ax, "1"
-	; 	je @@JumpingRight
-		
-	; 	cmp ax, "6"
-	; 	je @@JumpingLeft
-		
-	; 	cmp ax, "5"
-	; 	je @@JumpingRight
-
-	; 	@@JumpingLeft:
-	; 		mov [CurrentDkImage], "6"
-	; 		jmp @@Quit
-
-	; 	@@JumpingRight:
-	; 		mov [CurrentDkImage], "5"
-	; 		jmp @@Quit
-
-
-	; @@Walking:
-	; 	mov ax, [CurrentDkImage]
-	; 	cmp [LastDkImage], ax
-	; 	je @@WalkingAnimation
-
-	; 	cmp [ButtonPressed], "L"
-	; 	je @@StandingLeft
-		
-	; 	cmp [ButtonPressed], "R"
-	; 	je @@StandingRight
-
-
-	; 	@@WalkingAnimation:
-
-	; 		push 1
-	; 		Call GetTime
-
-	; 		cmp al, 1
-	; 		jge @@Animation
-	; 		jmp @@Quit
-
-
-	; 		@@Animation:
-
-	; 		push 1
-	; 		call StopTimer
-	; 		push 1
-	; 		call ResetTimer
-	; 		push 1
-	; 		call StartTimer
-
-	; 		cmp [ButtonPressed], "L"
-	; 		je @@WalkingAnimationLeft
-			
-	; 		cmp [ButtonPressed], "R"
-	; 		je @@WalkingAnimationRight
-
-	; 		@@WalkingAnimationLeft:
-	; 			cmp [CurrentDkImage], "2"
-	; 			je @@SwitchLeft
-
-	; 			mov [CurrentDkImage], "2"
-	; 			jmp @@Quit
-
-	; 			@@SwitchLeft:
-	; 				mov [CurrentDkImage], "4" ; 4
-	; 				jmp @@Quit
-
-
-	; 		@@WalkingAnimationRight:
-	; 			cmp [CurrentDkImage], "1"
-	; 			je @@SwitchRight
-
-	; 			mov [CurrentDkImage], "1"
-	; 			jmp @@Quit
-
-	; 			@@SwitchRight:
-	; 				mov [CurrentDkImage], "3" ; 3
-	; 				jmp @@Quit
-
-	; @@Climbing:
-	; 	cmp [ButtonPressed], "U"
-	; 	je @@ClimbingAnimation
-	; 	cmp [ButtonPressed], "D"
-	; 	je @@ClimbingAnimation
-
-	; 	jmp @@Quit
-
-	; 	@@ClimbingAnimation:
-	; 	push 1
-	; 	Call GetTime
-
-	; 	cmp al, 1
-	; 	jl @@Quit
-
-	; 	push 1
-	; 	call StopTimer
-	; 	push 1
-	; 	call ResetTimer
-	; 	push 1
-	; 	call StartTimer
-
-	; 	cmp [CurrentDkImage], "7"
-	; 	je @@SwitchClimb
-
-	; 	mov [CurrentDkImage], "7"
-	; 	jmp @@Quit
-
-	; 	@@SwitchClimb:
-	; 		mov [CurrentDkImage], "8"
-	; 		jmp @@Quit
 
 
 
@@ -398,18 +198,6 @@ proc UpdateDkImage
 		je @@Resume
 
 		call RefreshDk
-
-		; cmp [LastDkImage], "5"
-		; je @@ShowDk
-
-		; cmp [LastDkImage], "6"
-		; je @@ShowDk
-		
-		; cmp [LastDkImage], "7"
-		; je @@ShowDk
-		
-		; cmp [LastDkImage], "8"
-		; je @@ShowDk
 		
 		jmp @@Resume
 

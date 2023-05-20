@@ -19,7 +19,7 @@ DATASEG
 	; 0000 0000 |  0000 0000
 	; ↑↑↑↑↑↑↑↑↑ |  ↑↑↑↑  ↳↳↳↳ ID
 	;   Timer   | IsAtive 
-	Counters dw 7 dup (?)
+	Counters dw 9 dup (?)
 	CountersLenght db $ - Counters
 
 	CountersCounter db 0

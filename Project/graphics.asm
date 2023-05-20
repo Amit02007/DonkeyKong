@@ -21,6 +21,7 @@ DATASEG
 			db	1, "game254.bmp"
 			db	2, "help.bmp"
 			db	3, "pause.bmp"
+			db	4, "gameover.bmp"
 	
 	ScreensLenght db $ - Screens
 

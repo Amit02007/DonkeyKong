@@ -58,6 +58,7 @@ proc InitGame
 
     call InitMario
     call InitDk
+    call InitPeach
     call InitBarrel
     call ResetScore
     call DkDropBarrel
@@ -77,6 +78,7 @@ proc ResetGame
 
     call InitMario
     call InitDk
+    call InitPeach
     call InitBarrel
     call DkDropBarrel
 
@@ -116,6 +118,7 @@ proc UpdateGame
     call CheckHit
     call UpdateMario
     call UpdateDk
+    call UpdatePeach
     call UpdateBarrels
 
     call DropBarrel
@@ -272,7 +275,7 @@ proc RemoveLives
         jmp @@Quit
 
     @@One:
-        mov [SelectedScreen], 0
+        mov [SelectedScreen], 4
         call SwitchScreen
         call UpdateBackgourndImage
         jmp @@Quit
@@ -504,7 +507,6 @@ proc CloseLivesBmpFile
 	int 21h
 	ret
 endp CloseLivesBmpFile
-
 
 
 proc OpenShowLivesBmp

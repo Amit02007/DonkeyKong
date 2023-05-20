@@ -113,7 +113,7 @@ proc InitButtons
 	push 177
 	push 202
 	push 194
-	push offset exit
+	push offset Exit
 	call CreateButton
 
 
@@ -146,6 +146,37 @@ proc InitButtons
 	push 72
 	push offset SwitchToMenuScreen
 	call CreateButton
+
+
+
+	; ------- Game Over -------
+	; Quit Button
+	push 4
+	push 17
+	push 149
+	push 106
+	push 167
+	push offset Exit
+	call CreateButton
+
+	; Retry Button
+	push 4
+	push 116
+	push 149
+	push 205
+	push 167
+	push offset SwitchToGameScreen
+	call CreateButton
+
+	; Bacl To Menu Button
+	push 4
+	push 215
+	push 149
+	push 304
+	push 167
+	push offset SwitchToMenuScreen
+	call CreateButton
+
 
 
 	ret
