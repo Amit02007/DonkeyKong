@@ -16,7 +16,7 @@ DATASEG
     Barrels dw MAX_BARRELS_ON_SCREEN dup (0, 0, 0, 0, 0, 0, 0)
     BarrelsLenght dw $ - Barrels
 
-    BarrelsPath db "images/barrels/"
+    BarrelsPath db "../images/barrels/"
     BarrelFileName db "Barrel1.bmp", 0
 	
 	LastBarrelPos db MAX_BARRELS_ON_SCREEN dup (MAX_BARRELS_HEIGHT dup (MAX_BARRELS_WIDTH dup (0)))

@@ -6,7 +6,7 @@ STACK 90
 
 DATASEG
 
-    PeachPath db "images/peach/"
+    PeachPath db "../images/peach/"
 	PeachFileName db "peach2.bmp", 0
 
 	LastPeachPos 	db 15 dup (0)

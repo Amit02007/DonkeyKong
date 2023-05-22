@@ -10,7 +10,7 @@ DATASEG
 	; 2 -> Standing Left
 	; 3 -> Standing Forward With Barrel
 	; 4 -> Standing Right
-    DkPath db "images/dk/"
+    DkPath db "../images/dk/"
 	DkFileName db "dk1.bmp", 0
 
 	LastDkPos 		db 43 dup (0)

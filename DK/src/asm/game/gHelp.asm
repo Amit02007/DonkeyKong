@@ -8,7 +8,7 @@ DATASEG
 
     Lives db 3
 
-    gHelpPath db "images/other/"
+    gHelpPath db "../images/other/"
     LivesFileName db "Lives.bmp", 0
  
 	LivesFileHandle	dw ?

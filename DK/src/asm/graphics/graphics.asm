@@ -11,7 +11,7 @@ DATASEG
     ScrLine 	db BMP_WIDTH dup (0)  ; One Color line read buffer
 
 	;BMP File data
-    GraphicsPath db "images/screens/"
+    GraphicsPath db "../images/screens/"
 	ScreenFileName 	db "XXXXXXXX.bmp", 0
  
 	FileHandle	dw ?

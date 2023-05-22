@@ -14,7 +14,7 @@ DATASEG
 	; 6 -> Jumping Left
 	; 7 -> Climbing Right
 	; 8 -> Climbing Left
-    MarioPath db "images/mario/"
+    MarioPath db "../images/mario/"
 	MarioFileName db "mario1.bmp", 0
 
 	LastMarioPos 	db 16 dup (0)
