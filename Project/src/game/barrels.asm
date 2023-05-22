@@ -16,6 +16,7 @@ DATASEG
     Barrels dw MAX_BARRELS_ON_SCREEN dup (0, 0, 0, 0, 0, 0, 0)
     BarrelsLenght dw $ - Barrels
 
+    BarrelsPath db "images/barrels/"
     BarrelFileName db "Barrel1.bmp", 0
 	
 	LastBarrelPos db MAX_BARRELS_ON_SCREEN dup (MAX_BARRELS_HEIGHT dup (MAX_BARRELS_WIDTH dup (0)))
@@ -27,9 +28,6 @@ DATASEG
 
     CurrentBarrelImage dw "1"
 	LastBarrelImage dw "1"
-	; BarrelWidth db 12
-	; BarrelHeight db 10
-	; BarrelArea dw 120
 
 	IsBarrelInit db 0
 
@@ -225,7 +223,7 @@ proc ChangeBarrelImage
 
     mov bx, BarrelStartPosition
 
-	mov dx, offset BarrelFileName
+	mov dx, offset BarrelsPath
 	mov ax, [Barrels + bx]
 	mov [BmpLeft], ax
 	mov ax, [Barrels + bx + 2]
@@ -1347,7 +1345,7 @@ proc OpenShowBarrelBmp
 endp OpenShowBarrelBmp
 
 
-; input dx BarrelFileName to open
+; input dx BarrelsPath to open
 proc OpenBmpBarrelFile						 
 	mov ah, 3Dh
 	xor al, al

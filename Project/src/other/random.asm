@@ -66,30 +66,30 @@ proc RandomByCs
 	mov di, [word RndCurrentPos]
 	call MakeMask ; will put in si the right mask according the delta (bh) (example for 28 will put 31)
 	
-RandLoop: ;  generate random number 
-	mov ax, [es:06ch] ; read timer counter
-	mov ah, [byte cs:di] ; read one byte from memory (from semi random byte at cs)
-	xor al, ah ; xor memory and counter
-	
-	; Now inc di in order to get a different number next time
-	inc di
-	cmp di,(EndOfCsLbl - start - 1)
-	jb @@Continue
-	mov di, offset start
-@@Continue:
-	mov [word RndCurrentPos], di
-	
-	and ax, si ; filter result between 0 and si (the mask)
-	cmp al,bh    ;do again if  above the delta
-	ja RandLoop
-	
-	add al,bl  ; add the lower limit to the rnd num
-		 
-@@ExitP:	
-	pop di
-	pop si
-	pop es
-	ret
+	RandLoop: ;  generate random number 
+		mov ax, [es:06ch] ; read timer counter
+		mov ah, [byte cs:di] ; read one byte from memory (from semi random byte at cs)
+		xor al, ah ; xor memory and counter
+		
+		; Now inc di in order to get a different number next time
+		inc di
+		cmp di,(EndOfCsLbl - start - 1)
+		jb @@Continue
+		mov di, offset start
+	@@Continue:
+		mov [word RndCurrentPos], di
+		
+		and ax, si ; filter result between 0 and si (the mask)
+		cmp al,bh    ;do again if  above the delta
+		ja RandLoop
+		
+		add al,bl  ; add the lower limit to the rnd num
+			
+	@@ExitP:	
+		pop di
+		pop si
+		pop es
+		ret
 endp RandomByCs
 
 

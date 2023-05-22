@@ -1,9 +1,2 @@
-
- Start  Stop   Length Name               Class
-
- 00000H 02A0DH 02A0EH _TEXT              CODE
- 02A10H 053B7H 029A8H _DATA              DATA
- 053C0H 0550FH 00150H STACK              STACK
-
-Program entry point at 0000:29DA
+Fatal: Unable to open file 'main.obj'
 

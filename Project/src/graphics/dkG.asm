@@ -10,6 +10,7 @@ DATASEG
 	; 2 -> Standing Left
 	; 3 -> Standing Forward With Barrel
 	; 4 -> Standing Right
+    DkPath db "images/dk/"
 	DkFileName db "dk1.bmp", 0
 
 	LastDkPos 		db 43 dup (0)
@@ -108,7 +109,7 @@ proc ChangeDkImage
 	mov ax, Image
 	mov [DkFileName + 2], al
 
-	mov dx, offset DkFileName
+	mov dx, offset DkPath
 	mov ax, [DkTopPointX]
 	mov [BmpLeft], ax
 	mov ax, [DkTopPointY]
@@ -740,7 +741,7 @@ proc OpenShowDkBmp
 endp OpenShowDkBmp
 
 
-; input dx DkFileName to open
+; input dx DkPath to open
 proc OpenBmpDkFile						 
 	mov ah, 3Dh
 	xor al, al

@@ -9,17 +9,17 @@ BMP_WIDTH = 320
 BMP_HEIGHT = 200
 
 
-include "graphics.asm"
-include "mouse.asm"
-include "buttons.asm"
-include "mario.asm"
-include "dk.asm"
-include "peach.asm"
-include "barrels.asm"
-include "keyboard.asm"
-include "timer.asm"
-include "gHelp.asm"
-include "random.asm"
+include "src/graphics/graphics.asm"
+include "src/input/mouse.asm"
+include "src/input/buttons.asm"
+include "src/game/mario.asm"
+include "src/game/dk.asm"
+include "src/game/peach.asm"
+include "src/game/barrels.asm"
+include "src/input/keyboard.asm"
+include "src/other/timer.asm"
+include "src/game/gHelp.asm"
+include "src/other/random.asm"
 ; include "sound.asm"
 
 DATASEG

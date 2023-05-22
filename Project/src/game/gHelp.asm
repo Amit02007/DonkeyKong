@@ -8,6 +8,7 @@ DATASEG
 
     Lives db 3
 
+    gHelpPath db "images/other/"
     LivesFileName db "Lives.bmp", 0
  
 	LivesFileHandle	dw ?
@@ -208,7 +209,7 @@ proc ResetLives
     
     mov [Lives], 3
 
-    mov dx, offset LivesFileName
+    mov dx, offset gHelpPath
 	mov [BmpLeft],5
 	mov [BmpTop],5
 	mov [BmpColSize], 40
@@ -231,7 +232,7 @@ proc RemoveLives
     push di
     push si
 
-    mov dx, offset LivesFileName
+    mov dx, offset gHelpPath
 	mov [BmpLeft],5
 	mov [BmpTop],5
 	mov [BmpColSize], 40
@@ -530,7 +531,7 @@ proc OpenShowLivesBmp
 endp OpenShowLivesBmp
 
 
-; input dx LivesFileName to open
+; input dx gHelpPath to open
 proc OpenBmpLivesFile						 
 	mov ah, 3Dh
 	xor al, al

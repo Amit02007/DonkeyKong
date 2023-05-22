@@ -6,6 +6,7 @@ STACK 90
 
 DATASEG
 
+    PeachPath db "images/peach/"
 	PeachFileName db "peach2.bmp", 0
 
 	LastPeachPos 	db 15 dup (0)
@@ -77,7 +78,7 @@ proc ChangePeachImage
 	mov ax, Image
 	mov [PeachFileName + 5], al
 
-	mov dx, offset PeachFileName
+	mov dx, offset PeachPath
 	mov ax, [PeachTopPointX]
 	mov [BmpLeft], ax
 	mov ax, [PeachTopPointY]
@@ -378,7 +379,7 @@ proc OpenShowPeachBmp
 endp OpenShowPeachBmp
 
 
-; input dx PeachFileName to open
+; input dx PeachPath to open
 proc OpenBmpPeachFile						 
 	mov ah, 3Dh
 	xor al, al

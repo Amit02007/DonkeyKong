@@ -6,7 +6,7 @@ STACK 90
 Clock equ es:6Ch
 
 
-include "dkG.asm"
+include "graphics/dkG.asm"
 
 DATASEG
 

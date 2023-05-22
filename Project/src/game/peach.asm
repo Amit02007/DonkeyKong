@@ -4,7 +4,7 @@ MODEL small
 STACK 90
 
 
-include "peachG.asm"
+include "graphics/peachG.asm"
 
 DATASEG
 
