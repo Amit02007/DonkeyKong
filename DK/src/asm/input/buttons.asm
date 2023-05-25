@@ -4,7 +4,7 @@ MODEL small
 STACK 150h
 
 
-MAX_BUTTON_NUMBER = 12
+MAX_BUTTON_NUMBER = 20
 
 
 DATASEG
@@ -75,8 +75,85 @@ SwitchToMenuScreen:
 	mov [SelectedScreen], 0
 	call SwitchScreen
 	call UpdateBackgourndImage
+
+	push 200
+	call sleep_ms
 	
 jmp ButtonOnClickReturn
+
+
+ChangeSkin:
+
+	mov [SelectedScreen], 6
+	call SwitchScreen
+	call UpdateBackgourndImage
+
+	cmp [MarioFileName], "1"
+	je ChangToMarioSkin
+
+	cmp [MarioFileName], "2"
+	je ChangToWarioSkin
+
+	cmp [MarioFileName], "2"
+	je ChangToLuigiSkin
+
+jmp ButtonOnClickReturn
+
+
+ChangToMarioSkin:
+
+	mov [SelectedScreen], 6
+	call SwitchScreen
+	call UpdateBackgourndImage
+
+	mov [color], 0fh
+	mov [SquareSize], 65
+	mov [Xp], 41
+	mov [Yp], 57
+	call DrawSquare
+
+	mov [MarioFileName], "1"
+	mov [LivesFileName], "1"
+
+jmp ButtonOnClickReturn
+
+
+ChangToWarioSkin:
+
+	mov [SelectedScreen], 6
+	call SwitchScreen
+	call UpdateBackgourndImage
+
+	mov [color], 0fh
+	mov [SquareSize], 65
+	mov [Xp], 127
+	mov [Yp], 57
+	call DrawSquare
+
+	mov [MarioFileName], "3"
+	mov [LivesFileName], "3"
+
+jmp ButtonOnClickReturn
+
+
+ChangToLuigiSkin:
+
+	mov [SelectedScreen], 6
+	call SwitchScreen
+	call UpdateBackgourndImage
+
+	mov [color], 0fh
+	mov [SquareSize], 65
+	mov [Xp], 212
+	mov [Yp], 57
+	call DrawSquare
+
+	mov [MarioFileName], "2"
+	mov [LivesFileName], "2"
+
+jmp ButtonOnClickReturn
+
+
 
 
 ; ---------- Functions ----------
@@ -114,6 +191,15 @@ proc InitButtons
 	push 202
 	push 194
 	push offset Exit
+	call CreateButton
+
+	; Change Skin
+	push 0
+	push 74
+	push 79
+	push 88
+	push 85
+	push offset ChangeSkin
 	call CreateButton
 
 
@@ -175,6 +261,75 @@ proc InitButtons
 	push 304
 	push 167
 	push offset SwitchToMenuScreen
+	call CreateButton
+	
+	
+	
+	; ------- You Won -------
+	; Quit Button
+	push 5
+	push 17
+	push 149
+	push 106
+	push 167
+	push offset Exit
+	call CreateButton
+
+	; Retry Button
+	push 5
+	push 116
+	push 149
+	push 205
+	push 167
+	push offset SwitchToGameScreen
+	call CreateButton
+
+	; Back To Menu Button
+	push 5
+	push 215
+	push 149
+	push 304
+	push 167
+	push offset SwitchToMenuScreen
+	call CreateButton
+
+
+
+	; ------- Change Skin -------
+	; Back Button
+	push 6
+	push 115
+	push 173
+	push 204
+	push 191
+	push offset SwitchToMenuScreen
+	call CreateButton
+
+	; Select Mario
+	push 6
+	push 137
+	push 58
+	push 181
+	push 121
+	push offset ChangToWarioSkin
+	call CreateButton
+
+	; Select Wario
+	push 6
+	push 51
+	push 58
+	push 98
+	push 121
+	push offset ChangToMarioSkin
+	call CreateButton
+
+	; Select Luigi
+	push 6
+	push 224
+	push 58
+	push 271
+	push 121
+	push offset ChangToLuigiSkin
 	call CreateButton
 
 

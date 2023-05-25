@@ -9,7 +9,7 @@ DATASEG
     Lives db 3
 
     gHelpPath db "../images/other/"
-    LivesFileName db "Lives.bmp", 0
+    LivesFileName db "1lives.bmp", 0
  
 	LivesFileHandle	dw ?
 	LivesHeader db 54 dup(0)
@@ -406,6 +406,10 @@ proc DropBarrel
 
     cmp [IsReadyToClimb], 1
     je @@Slower
+    cmp [MarioJumpState], 1
+	je @@Slower
+	cmp [IsSlower], 1
+	je @@Slower
 
     cmp [MarioClimbState], 1
     jne @@NotJumping

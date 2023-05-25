@@ -24,6 +24,7 @@ DATASEG
 	LastClimb dw 0
 
 	IsInit db 0
+	IsSlower db 0
 
 
 CODESEG
@@ -142,16 +143,20 @@ proc UpdateMario
 
 	@@JumpingDirectionZero:
 		mov [JumpingDirection], 0
+		jmp @@Resume
 
 	@@ResumeFalling:
+		mov [IsSlower], 1
 		call MarioFalling
-		jmp @@Resume
+		jmp @@Quit
 
 	@@Jump:
 		mov [IsJumping], 1
 		call MarioJump
+		jmp @@Quit
 
 	@@Resume:
+	mov [IsSlower], 0
 
 	call CheckIsReadyToClimb
 
@@ -205,7 +210,6 @@ proc UpdateMario
 			jmp @@Quit
 
 	@@ClimbButton:
-
 		call CheckIsReadyToClimb
 
 		cmp [IsReadyToClimb], 0
@@ -282,6 +286,13 @@ proc MarioClimb
 		call MoveMarioPixelUp
 		call MoveMarioPixelUp
 		mov [MarioClimbState], 0
+		
+		cmp [MarioTopPointY], 21
+		ja @@Quit
+
+		mov [SelectedScreen], 5
+		call SwitchScreen
+		call UpdateBackgourndImage
 
 		jmp @@Quit
 

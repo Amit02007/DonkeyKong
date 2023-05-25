@@ -299,6 +299,63 @@ proc ChangeBarrelData
 endp ChangeBarrelData
 
 
+proc RemoveAllBarrels
+	push ax
+	push bx
+	push cx
+	push dx
+	push di
+
+	xor bx, bx
+    @@FindMovingBarrel:
+        cmp [word ptr Barrels + bx], 0
+        jne @@Found
+
+        add bx, NEXT_BARREL
+        cmp bx, [BarrelsLenght]
+        jb @@FindMovingBarrel
+
+    jmp @@Quit
+
+	@@NextBarrelInList:
+		add bx, NEXT_BARREL
+		cmp bx, [BarrelsLenght]
+		jnbe @@Quit
+
+		jmp @@FindMovingBarrel
+
+
+	@@Found:
+		push [Barrels + bx]
+		push [Barrels + bx + 2]
+		call ConvertMatrixPos
+
+		push bx
+		lea cx, [LastBarrelPos] 
+		push bx
+		call GetLastBarrelPosOffset
+		add cx, bx
+		pop bx
+
+		mov [Matrix], cx ; put the bytes offset in Matrix
+
+		mov dx, [Barrels + bx + 6]   ; number of cols 
+		mov cx, [Barrels + bx + 8]  ;number of rows
+		call putMatrixInScreen
+
+		jmp @@NextBarrelInList
+
+
+	@@Quit:
+		pop di
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		ret
+endp RemoveAllBarrels
+
+
 proc UpdateBarrelImage
 	push ax
 	push bx
@@ -440,12 +497,16 @@ proc MoveBarrels
 
 	cmp [IsReadyToClimb], 1
 	je @@Slower
+	cmp [MarioJumpState], 1
+	je @@Slower
+	cmp [IsSlower], 1
+	je @@Slower
 
 	cmp [MarioClimbState], 1
 	jne @@NotJumping
 
 	@@Slower:
-	cmp al, 5
+	cmp al, 3
 	jnb @@Resume
 	jmp @@Quit
 
@@ -801,6 +862,7 @@ proc RemoveBarrelBackground
 	ret 2
 endp RemoveBarrelBackground
 
+
 BarrelStartPosition equ [bp + 4]
 proc GetLastBarrelPosOffset
     push bp
@@ -865,6 +927,7 @@ proc MoveBarrelPixelLeft
 	mov dx, [Barrels + bx + 6]   ; number of cols 
 	mov cx, [Barrels + bx + 8]  ;number of rows
 	call putMatrixInScreen
+	
 
 
 	mov bx, BarrelStartPosition
@@ -901,6 +964,7 @@ proc MoveBarrelPixelLeft
 		add si, ax
 	loop @@MovMatrixRight2D
 
+
 	mov si, BarrelStartPosition
 	mov cx, [Barrels + si]
 	dec cx
@@ -916,6 +980,7 @@ proc MoveBarrelPixelLeft
 		add ax, si
 		push ax
 		call GetPixelColor
+		
 
 		push si
 		push ax
@@ -1010,6 +1075,7 @@ proc MoveBarrelPixelRight
 		add bx, 1
 	loop @@MovMatrixLeft2D
 
+
     mov bx, BarrelStartPosition
 	mov cx, [Barrels + bx]
 	; add cx, BarrelWidth
@@ -1034,6 +1100,7 @@ proc MoveBarrelPixelRight
 		push cx
 		push ax
 		call GetPixelColor
+
 
 		push si
 		push ax
@@ -1150,6 +1217,7 @@ proc MoveBarrelPixelDown
 		mov bx, dx
 	loop @@MovMatrixUp2D
 
+
     mov bx, BarrelStartPosition
 
 	mov ax, [Barrels + bx + 8]
@@ -1170,6 +1238,7 @@ proc MoveBarrelPixelDown
 		push ax
 		push cx
 		call GetPixelColor
+
 
 		push si
 		add si, dx

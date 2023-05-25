@@ -15,7 +15,7 @@ DATASEG
 	; 7 -> Climbing Right
 	; 8 -> Climbing Left
     MarioPath db "../images/mario/"
-	MarioFileName db "mario1.bmp", 0
+	MarioFileName db "1mario1.bmp", 0
 
 	LastMarioPos 	db 16 dup (0)
 					db 16 dup (0)
@@ -72,7 +72,7 @@ proc ChangeMarioImage
 	push dx
 	
 	mov ax, Image
-	mov [MarioFileName + 5], al
+	mov [MarioFileName + 6], al
 
 	mov dx, offset MarioPath
 	mov ax, [MarioTopPointX]
