@@ -47,14 +47,6 @@ proc InitMario
 	mov cl, [MarioWidth]
 
 
-
-	; for (int si = 0; si < MarioHeight; si++) {
-	; 	for (int bx = 0; bx < MarioWidth; bx++) {
-	;
-	;	}
-	; }
-	;
-
 	xor si, si
 	@@Column:
 		xor bx, bx
@@ -125,6 +117,12 @@ proc UpdateMario
 	je @@ResumeFalling
 
 	; On floor
+		; mov [IsJumping], 0
+
+		; mov [JumpingDirection], 0
+
+		; jmp @@Resume
+	
 
 	cmp [IsJumping], 1 ; Means that returned from jump to floor
 	je @@ReturnFromJump
@@ -217,12 +215,7 @@ proc UpdateMario
 
 		mov [MarioClimbState], 1
 
-
-	jmp @@Quit
-
-	@@RemoveMario:
-		mov [IsInit], 0
-		call CloseMarioBmpFile
+		jmp @@Quit
 
 	@@Quit:
 		pop ax
@@ -289,6 +282,10 @@ proc MarioClimb
 		
 		cmp [MarioTopPointY], 21
 		ja @@Quit
+
+		; Show cruser
+		mov ax, 01h
+		int 33h
 
 		mov [SelectedScreen], 5
 		call SwitchScreen

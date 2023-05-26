@@ -37,26 +37,47 @@ jmp ButtonOnClickReturn
 
 BackFromPause:
 	push ax
+	push bx
 	push dx
+	push di
 
 	mov [SelectedScreen], 1
 	call SwitchScreen
 	call UpdateBackgourndImage
+
+	call ShowAllBarrels
+
+	push [CurrentMarioImage]
+	call ChangeMarioImage
 		
-	mov dx, offset MarioFileName
-	mov ax, [MarioTopPointX]
-	mov [BmpLeft], ax
-	mov ax, [MarioTopPointY]
-	mov [BmpTop], ax
-	mov [BmpColSize], 12
-	mov [BmpRowSize], 16
-	call OpenShowMarioBmp
+	push [CurrentDkImage]
+	call ChangeDkImage
+
+	push [CurrentPeachImage]
+	call ChangePeachImage
+
+	call ShowLives
+
+	; Show Score
+	mov ah, 2
+	mov bh, 0
+	push 3
+	push 1
+	call ConvertMatrixPos
+	mov dx, di
+	int 10h
+
+	mov ah, 9
+	lea dx, [Score]
+	int 21h
+
+	; Hide cruser
+	mov ax, 02h
+	int 33h
 	
-	call RemoveMarioBackground
-	
-	mov [IsInit], 1
-	
+	pop di
 	pop dx
+	pop bx
 	pop ax
 jmp ButtonOnClickReturn
 
@@ -75,9 +96,6 @@ SwitchToMenuScreen:
 	mov [SelectedScreen], 0
 	call SwitchScreen
 	call UpdateBackgourndImage
-
-	push 200
-	call sleep_ms
 	
 jmp ButtonOnClickReturn
 
@@ -92,10 +110,10 @@ ChangeSkin:
 	je ChangToMarioSkin
 
 	cmp [MarioFileName], "2"
-	je ChangToWarioSkin
-
-	cmp [MarioFileName], "2"
 	je ChangToLuigiSkin
+
+	cmp [MarioFileName], "3"
+	je ChangToWarioSkin
 
 jmp ButtonOnClickReturn
 
@@ -118,24 +136,6 @@ ChangToMarioSkin:
 jmp ButtonOnClickReturn
 
 
-ChangToWarioSkin:
-
-	mov [SelectedScreen], 6
-	call SwitchScreen
-	call UpdateBackgourndImage
-
-	mov [color], 0fh
-	mov [SquareSize], 65
-	mov [Xp], 127
-	mov [Yp], 57
-	call DrawSquare
-
-	mov [MarioFileName], "3"
-	mov [LivesFileName], "3"
-
-jmp ButtonOnClickReturn
-
-
 ChangToLuigiSkin:
 
 	mov [SelectedScreen], 6
@@ -150,6 +150,24 @@ ChangToLuigiSkin:
 
 	mov [MarioFileName], "2"
 	mov [LivesFileName], "2"
+
+jmp ButtonOnClickReturn
+
+
+ChangToWarioSkin:
+
+	mov [SelectedScreen], 6
+	call SwitchScreen
+	call UpdateBackgourndImage
+
+	mov [color], 0fh
+	mov [SquareSize], 65
+	mov [Xp], 127
+	mov [Yp], 57
+	call DrawSquare
+
+	mov [MarioFileName], "3"
+	mov [LivesFileName], "3"
 
 jmp ButtonOnClickReturn
 
@@ -221,7 +239,7 @@ proc InitButtons
 	push 23
 	push 205
 	push 41
-	push offset SwitchToGameScreen
+	push offset BackFromPause
 	call CreateButton
 
 	; Quit Button
@@ -254,7 +272,7 @@ proc InitButtons
 	push offset SwitchToGameScreen
 	call CreateButton
 
-	; Bacl To Menu Button
+	; Back To Menu Button
 	push 4
 	push 215
 	push 149
@@ -307,15 +325,6 @@ proc InitButtons
 
 	; Select Mario
 	push 6
-	push 137
-	push 58
-	push 181
-	push 121
-	push offset ChangToWarioSkin
-	call CreateButton
-
-	; Select Wario
-	push 6
 	push 51
 	push 58
 	push 98
@@ -330,6 +339,15 @@ proc InitButtons
 	push 271
 	push 121
 	push offset ChangToLuigiSkin
+	call CreateButton
+
+	; Select Wario
+	push 6
+	push 137
+	push 58
+	push 181
+	push 121
+	push offset ChangToWarioSkin
 	call CreateButton
 
 
@@ -499,6 +517,8 @@ proc CheckClickOnButton
 		jmp ax
 
 	ButtonOnClickReturn: ; All the buttons click methods return to here
+		push 250
+		call sleep_ms
 
 	; If the mouse is not on a button return the default cursor
 	@@NotOnButton:

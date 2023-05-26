@@ -356,6 +356,50 @@ proc RemoveAllBarrels
 endp RemoveAllBarrels
 
 
+proc ShowAllBarrels
+	push ax
+	push bx
+	push cx
+	push dx
+	push di
+
+	xor bx, bx
+    @@FindMovingBarrel:
+        cmp [word ptr Barrels + bx], 0
+        jne @@Found
+
+        add bx, NEXT_BARREL
+        cmp bx, [BarrelsLenght]
+        jb @@FindMovingBarrel
+
+    jmp @@Quit
+
+	@@NextBarrelInList:
+		add bx, NEXT_BARREL
+		cmp bx, [BarrelsLenght]
+		jnbe @@Quit
+
+		jmp @@FindMovingBarrel
+
+
+	@@Found:
+		push bx
+		push [Barrels + bx + 4]
+		call ChangeBarrelImage
+
+		jmp @@NextBarrelInList
+
+
+	@@Quit:
+		pop di
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		ret
+endp ShowAllBarrels
+
+
 proc UpdateBarrelImage
 	push ax
 	push bx

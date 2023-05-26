@@ -23,7 +23,7 @@ include "other/random.asm"
 ; include "sound.asm"
 
 DATASEG
-
+	YMCA1 db 0
 CODESEG
  
 

@@ -113,8 +113,14 @@ endp ResetGame
 
 proc UpdateGame
 
+    cmp [CurrentScreen], 3
+    je @@Quit
+
     cmp [CurrentScreen], 1
     jne @@Quit
+
+    cmp [ButtonPressed], "E"
+    je @@Pause
 
     call CheckHit
     call UpdateMario
@@ -123,6 +129,18 @@ proc UpdateGame
     call UpdateBarrels
 
     call DropBarrel
+
+    jmp @@Quit
+
+    @@Pause:
+        ; Show cruser
+		mov ax, 01h
+		int 33h
+
+        mov [SelectedScreen], 3
+	    call SwitchScreen
+	    call UpdateBackgourndImage
+
 
     @@Quit:
         ret
@@ -276,6 +294,10 @@ proc RemoveLives
         jmp @@Quit
 
     @@One:
+        ; Show cruser
+		mov ax, 01h
+		int 33h
+
         mov [SelectedScreen], 4
         call SwitchScreen
         call UpdateBackgourndImage
@@ -289,6 +311,64 @@ proc RemoveLives
         pop ax
         ret
 endp RemoveLives
+
+
+proc ShowLives
+    push ax
+    push cx
+    push dx
+    push di
+    push si
+
+    mov dx, offset gHelpPath
+	mov [BmpLeft],5
+	mov [BmpTop],5
+	mov [BmpColSize], 40
+	mov [BmpRowSize] ,13
+	call OpenShowLivesBmp
+	cmp [ErrorFile], 0
+	je @@NoError
+	jmp exitError
+    
+    @@NoError:
+
+    cmp [Lives], 3
+    je @@Quit
+
+    cmp [Lives], 2
+    je @@Two
+  
+    cmp [Lives], 1
+    je @@One
+
+    jmp @@Quit
+
+    @@Two:
+        mov cx, 35
+        mov dx, 5
+        mov di, 10
+        mov si, 13
+        mov al, 0
+        call Rect
+        jmp @@Quit
+
+    @@One:
+        mov cx, 20
+        mov dx, 5
+        mov di, 55
+        mov si, 13
+        mov al, 0
+        call Rect
+        jmp @@Quit
+
+    @@Quit:
+        pop si
+        pop di
+        pop dx
+        pop cx
+        pop ax
+        ret
+endp ShowLives
 
 
 proc CheckHit

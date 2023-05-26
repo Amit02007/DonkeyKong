@@ -89,13 +89,8 @@ DATASEG
 	DkHeight db 32
 	DkArea dw 1280
 
-	; DkWidth db 43
-	; DkHeight db 32
-	; DkArea dw 1376
-
 	CurrentDkImageAnimation dw "1"
 
-	; IsWalking db 1
 
 CODESEG
 
