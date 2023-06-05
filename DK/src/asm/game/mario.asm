@@ -23,7 +23,7 @@ DATASEG
 	MarioClimbState db 0
 	LastClimb dw 0
 
-	IsInit db 0
+	; IsInit db 0
 	IsSlower db 0
 
 
@@ -287,10 +287,8 @@ proc MarioClimb
 		mov ax, 01h
 		int 33h
 
-		mov [SelectedScreen], 5
-		call SwitchScreen
-		call UpdateBackgourndImage
-
+		CHANGE_BACKGROUND 5
+		
 		jmp @@Quit
 
 	@@Down:

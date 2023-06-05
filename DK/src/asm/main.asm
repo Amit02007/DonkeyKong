@@ -20,10 +20,9 @@ include "input/keyboard.asm"
 include "other/timer.asm"
 include "game/gHelp.asm"
 include "other/random.asm"
-; include "sound.asm"
 
 DATASEG
-	YMCA1 db 0
+
 CODESEG
  
 
@@ -36,7 +35,6 @@ start:
 
 
 	MainLoop:
-		; call PlayMusic
 		call UpdateTime
 		call UpdateMouse
 		call CheckClickOnButton
@@ -56,8 +54,6 @@ exitError:
 	int 21h
 			
 exit:
-	; call StopMusic
-
 	; Text Mode
 	mov ax,2
 	int 10h

@@ -13,7 +13,7 @@ DATASEG
 	; and the upper 8 bits represent the time elapsed since the timer was started. 
 
 	; Last byte = ID
-	; Second byte from left = Is Active
+	; Second byte from right = Is Active
 	; Upper bytes = Time
 
 	; 0000 0000 |  0000 0000
@@ -265,9 +265,9 @@ proc UpdateTime
 	mov ax, 40h
 	mov es, ax
 
-	DelayLoop:
+	@@DelayLoop:
 		mov ax, [LastCount]
-		Tick :
+		@@Tick:
 			cmp ax, [Clock]
 			je @@Quit
 

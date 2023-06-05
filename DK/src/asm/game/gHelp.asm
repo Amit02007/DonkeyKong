@@ -137,9 +137,7 @@ proc UpdateGame
 		mov ax, 01h
 		int 33h
 
-        mov [SelectedScreen], 3
-	    call SwitchScreen
-	    call UpdateBackgourndImage
+	    CHANGE_BACKGROUND 3
 
 
     @@Quit:
@@ -298,9 +296,8 @@ proc RemoveLives
 		mov ax, 01h
 		int 33h
 
-        mov [SelectedScreen], 4
-        call SwitchScreen
-        call UpdateBackgourndImage
+	    CHANGE_BACKGROUND 4
+
         jmp @@Quit
 
     @@Quit:
@@ -319,7 +316,7 @@ proc ShowLives
     push dx
     push di
     push si
-
+    
     mov dx, offset gHelpPath
 	mov [BmpLeft],5
 	mov [BmpTop],5
@@ -448,9 +445,7 @@ proc CheckHit
             jnbe @@NextBarrelInList
         
         @@Hit:
-            mov [SelectedScreen], 1
-            call SwitchScreen
-            call UpdateBackgourndImage
+	        CHANGE_BACKGROUND 1
 
             call ResetGame
             call RemoveLives

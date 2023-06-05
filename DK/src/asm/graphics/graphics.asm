@@ -3,6 +3,14 @@ IDEAL
 MODEL small
 STACK 150h
 
+macro CHANGE_BACKGROUND screen
+
+	mov [SelectedScreen], screen
+	call SwitchScreen
+	call UpdateBackgourndImage
+
+endm
+
 
 DATASEG
 

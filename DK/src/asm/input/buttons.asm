@@ -25,9 +25,7 @@ SwitchToGameScreen:
 	push Offset EmptyCursor
 	call ChangeCursor
 
-	mov [SelectedScreen], 1
-	call SwitchScreen
-	call UpdateBackgourndImage
+	CHANGE_BACKGROUND 1
 
     call ResetLives
 	call InitGame
@@ -41,9 +39,7 @@ BackFromPause:
 	push dx
 	push di
 
-	mov [SelectedScreen], 1
-	call SwitchScreen
-	call UpdateBackgourndImage
+	CHANGE_BACKGROUND 1
 
 	call ShowAllBarrels
 
@@ -84,27 +80,21 @@ jmp ButtonOnClickReturn
 
 SwitchToHelpScreen:
 
-	mov [SelectedScreen], 2
-	call SwitchScreen
-	call UpdateBackgourndImage
+	CHANGE_BACKGROUND 2
 	
 jmp ButtonOnClickReturn
 
 
 SwitchToMenuScreen:
 
-	mov [SelectedScreen], 0
-	call SwitchScreen
-	call UpdateBackgourndImage
+	CHANGE_BACKGROUND 0
 	
 jmp ButtonOnClickReturn
 
 
 ChangeSkin:
 
-	mov [SelectedScreen], 6
-	call SwitchScreen
-	call UpdateBackgourndImage
+	CHANGE_BACKGROUND 6
 
 	cmp [MarioFileName], "1"
 	je ChangToMarioSkin
@@ -120,9 +110,7 @@ jmp ButtonOnClickReturn
 
 ChangToMarioSkin:
 
-	mov [SelectedScreen], 6
-	call SwitchScreen
-	call UpdateBackgourndImage
+	CHANGE_BACKGROUND 6
 
 	mov [color], 0fh
 	mov [SquareSize], 65
@@ -138,9 +126,7 @@ jmp ButtonOnClickReturn
 
 ChangToLuigiSkin:
 
-	mov [SelectedScreen], 6
-	call SwitchScreen
-	call UpdateBackgourndImage
+	CHANGE_BACKGROUND 6
 
 	mov [color], 0fh
 	mov [SquareSize], 65
@@ -156,9 +142,7 @@ jmp ButtonOnClickReturn
 
 ChangToWarioSkin:
 
-	mov [SelectedScreen], 6
-	call SwitchScreen
-	call UpdateBackgourndImage
+	CHANGE_BACKGROUND 6
 
 	mov [color], 0fh
 	mov [SquareSize], 65
