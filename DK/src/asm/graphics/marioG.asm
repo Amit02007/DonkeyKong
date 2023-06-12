@@ -61,6 +61,10 @@ DATASEG
 	MarioHeight db 16
 	MarioArea dw 192
 
+	IsStartedStandingTimer db 0
+	CheckingStandingX dw ?
+	CheckingStandingY dw ?
+
 CODESEG
 
 
@@ -182,7 +186,7 @@ proc UpdateMarioImage
 	mov ax, [CurrentMarioImage]
 	mov [LastMarioImage], ax
 
-	
+
 	cmp [IsJumping], 1
 	je @@Jumping
 	
@@ -201,6 +205,10 @@ proc UpdateMarioImage
 	cmp [ButtonPressed], "R"
 	je @@Walking
 
+	call CheckStanding
+	cmp al, 1
+	je @@Standing
+
 	jmp @@Quit
 
 	@@Standing:
@@ -210,6 +218,8 @@ proc UpdateMarioImage
 		je @@StandingLeft
 		
 		cmp [LastButtonPressed], "R"
+		je @@StandingRight
+		cmp [CurrentMarioImage], "3"
 		je @@StandingRight
 		
 		jmp @@Quit
@@ -369,6 +379,12 @@ proc UpdateMarioImage
 
 		call RefreshMario
 
+		cmp [LastMarioImage], "3"
+		je @@ShowMario
+
+		cmp [LastMarioImage], "4"
+		je @@ShowMario
+
 		cmp [LastMarioImage], "5"
 		je @@ShowMario
 
@@ -394,6 +410,56 @@ proc UpdateMarioImage
 			pop ax
 			ret
 endp UpdateMarioImage
+
+
+proc CheckStanding
+
+	cmp [IsStartedStandingTimer], 0
+	je @@StartTimer
+
+	push 9
+	call GetTime
+
+	cmp al, 6
+	jne @@ReturnZero
+
+	mov ax, [MarioTopPointX]
+	cmp ax, [CheckingStandingX]
+	jne @@ReturnZeroAndReset
+
+	mov ax, [MarioTopPointY]
+	cmp ax, [CheckingStandingY]
+	jne @@ReturnZeroAndReset
+
+	
+	mov [IsStartedStandingTimer], 0
+	mov ax, 1
+	jmp @@Quit
+
+	@@StartTimer:
+		push 9
+		call StartTimer
+
+		mov ax, [MarioTopPointX]
+		mov [CheckingStandingX], ax
+		
+		mov ax, [MarioTopPointY]
+		mov [CheckingStandingY], ax
+
+		mov [IsStartedStandingTimer], 1
+
+		jmp @@ReturnZero
+
+	@@ReturnZeroAndReset:
+		mov [IsStartedStandingTimer], 0
+
+	@@ReturnZero:
+		xor ax, ax
+
+
+	@@Quit:
+		ret
+endp CheckStanding
 
 
 proc RefreshMario
